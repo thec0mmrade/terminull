@@ -1,0 +1,86 @@
+---
+interface MenuItem {
+  label: string;
+  href: string;
+  description?: string;
+}
+
+interface Props {
+  items: MenuItem[];
+  title?: string;
+}
+
+const { items, title } = Astro.props;
+---
+
+{title && <h2 class="bbs-menu__title">{title}</h2>}
+<nav class="bbs-menu" role="navigation" aria-label={title || 'Menu'}>
+  <ol class="bbs-menu__list">
+    {items.map((item, i) => (
+      <li class="bbs-menu__item" data-nav-item data-nav-index={i}>
+        <a href={item.href} class="bbs-menu__link">
+          <span class="bbs-menu__num">[{String(i).padStart(2, '0')}]</span>
+          <span class="bbs-menu__label">{item.label}</span>
+          {item.description && (
+            <span class="bbs-menu__desc">- {item.description}</span>
+          )}
+        </a>
+      </li>
+    ))}
+  </ol>
+</nav>
+
+<style>
+  .bbs-menu__title {
+    color: var(--gold);
+    font-size: 1.625rem;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .bbs-menu__list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .bbs-menu__item {
+    position: relative;
+    padding: 0.375rem 0;
+    padding-left: 1.5rem;
+    transition: background-color 0.1s;
+  }
+
+  .bbs-menu__item.nav-active {
+    background-color: var(--bg-highlight);
+    border-left: 2px solid var(--green);
+    padding-left: calc(1.5rem - 2px);
+  }
+
+  .bbs-menu__link {
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+    text-decoration: none;
+  }
+
+  .bbs-menu__link:hover .bbs-menu__label {
+    color: var(--green-bright);
+  }
+
+  .bbs-menu__num {
+    color: var(--cyan);
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  .bbs-menu__label {
+    color: var(--green);
+    transition: color 0.15s;
+  }
+
+  .bbs-menu__desc {
+    color: var(--text-muted);
+    font-size: 1.25rem;
+  }
+</style>

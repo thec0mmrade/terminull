@@ -1,0 +1,83 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BbsMenu from '../components/BbsMenu.astro';
+import AsciiArt from '../components/AsciiArt.astro';
+
+const menuItems = [
+  { label: 'Latest Issue', href: '/vol/1', description: 'Volume 1 -- June 2025' },
+  { label: 'Archive', href: '/vol', description: 'All volumes' },
+  { label: 'About', href: '/about', description: 'What is terminull?' },
+  { label: 'Manifesto', href: '/manifesto', description: 'What we believe' },
+  { label: 'Help', href: '/help', description: 'Commands & navigation' },
+];
+---
+
+<BaseLayout title="terminull" description="terminull - hacker e-zine. A return to the underground." page="HOME">
+  <AsciiArt text={'═'.repeat(76)} color="muted" />
+
+  <BbsMenu items={menuItems} title="Main Menu" />
+
+  <div class="terminal-divider" aria-hidden="true">{'─'.repeat(76)}</div>
+
+  <div class="motd">
+    <p class="motd-label">[MESSAGE OF THE DAY]</p>
+    <p class="motd-text">
+      Welcome to <strong>terminull</strong>, volume 1. This is a space for hackers,
+      researchers, artists, and anyone who believes knowledge should be free.
+      Type <code>help</code> or press <code>?</code> for navigation commands.
+    </p>
+  </div>
+
+  <div class="terminal-divider" aria-hidden="true">{'─'.repeat(76)}</div>
+
+  <footer class="terminal-footer">
+    <p>terminull v1.0 // no tracking // no ads // no javascript required*</p>
+    <p class="terminal-footer__note">*keyboard nav & command prompt are progressive enhancements</p>
+  </footer>
+</BaseLayout>
+
+<style>
+  .motd {
+    margin: 1.5rem 0;
+  }
+
+  .motd-label {
+    color: var(--gold);
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+  }
+
+  .motd-text {
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  .motd-text strong {
+    color: var(--green);
+  }
+
+  .motd-text code {
+    color: var(--pink);
+    background: var(--bg-surface);
+    padding: 0.125rem 0.375rem;
+    border: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.25rem;
+  }
+
+  .terminal-footer {
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+    margin-top: 2rem;
+    color: var(--text-muted);
+    font-size: 1.125rem;
+    text-align: center;
+  }
+
+  .terminal-footer__note {
+    margin-top: 0.25rem;
+    font-size: 1rem;
+    color: var(--text-muted);
+  }
+</style>

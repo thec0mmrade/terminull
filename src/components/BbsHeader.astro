@@ -1,0 +1,80 @@
+---
+import AsciiArt from './AsciiArt.astro';
+import BoxFrame from './BoxFrame.astro';
+
+const now = new Date();
+const dateStr = now.toISOString().split('T')[0];
+---
+
+<header class="bbs-header" role="banner">
+  <a href="/" class="bbs-header__logo-link" aria-label="terminull home">
+    <AsciiArt file="/art/logo.txt" color="green" />
+  </a>
+  <BoxFrame title="SYSTEM INFO">
+    <div class="system-info">
+      <div class="system-info__line">
+        <span class="label">Connected:</span>
+        <span class="value">{dateStr}</span>
+        <span class="sep">|</span>
+        <span class="label">User:</span>
+        <span class="value user">guest</span>
+        <span class="sep">|</span>
+        <span class="label">Node:</span>
+        <span class="value">terminull.local</span>
+      </div>
+      <div class="system-info__line">
+        <span class="label">Protocol:</span>
+        <span class="value">SSH-2.0</span>
+        <span class="sep">|</span>
+        <span class="label">Term:</span>
+        <span class="value">xterm-256color</span>
+        <span class="sep">|</span>
+        <span class="label">Charset:</span>
+        <span class="value">UTF-8</span>
+      </div>
+    </div>
+  </BoxFrame>
+</header>
+
+<style>
+  .bbs-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .bbs-header__logo-link {
+    display: block;
+    text-decoration: none;
+    margin-bottom: 1rem;
+  }
+
+  .bbs-header__logo-link:hover :global(.ascii-art) {
+    color: var(--green-bright);
+  }
+
+  .system-info {
+    font-size: 1.25rem;
+    line-height: 1.6;
+  }
+
+  .system-info__line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .label {
+    color: var(--text-muted);
+  }
+
+  .value {
+    color: var(--text-secondary);
+  }
+
+  .value.user {
+    color: var(--green);
+  }
+
+  .sep {
+    color: var(--border);
+  }
+</style>

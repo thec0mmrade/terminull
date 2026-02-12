@@ -1,0 +1,39 @@
+---
+interface Props {
+  category: string;
+}
+
+const { category } = Astro.props;
+
+const colorMap: Record<string, string> = {
+  'editorial': 'gold',
+  'ascii-art': 'pink',
+  'security-news': 'red',
+  'guide': 'cyan',
+  'writeup': 'green',
+  'tool': 'green',
+  'fiction': 'pink',
+  'interview': 'gold',
+};
+
+const color = colorMap[category] || 'green';
+---
+
+<span class:list={['category-badge', `category-badge--${color}`]}>
+  [{category}]
+</span>
+
+<style>
+  .category-badge {
+    font-size: 1.125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  .category-badge--green { color: var(--green-dim); }
+  .category-badge--gold { color: var(--gold-dim); }
+  .category-badge--cyan { color: var(--cyan-dim); }
+  .category-badge--pink { color: var(--pink-dim); }
+  .category-badge--red { color: var(--red); }
+</style>

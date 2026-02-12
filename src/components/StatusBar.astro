@@ -1,0 +1,75 @@
+---
+interface Props {
+  page?: string;
+  volume?: number;
+}
+
+const { page = 'HOME', volume } = Astro.props;
+---
+
+<div class="status-bar" role="status">
+  <div class="status-bar-inner">
+    <span class="status-left">
+      terminull
+      {volume !== undefined && <span>// vol.{volume}</span>}
+      {' '}<span class="status-page">[ {page} ]</span>
+    </span>
+    <span class="status-right">
+      <span class="status-help">? for help</span>
+      <span class="status-sep">|</span>
+      <span class="status-nav">j/k navigate</span>
+      <span class="status-sep">|</span>
+      <span class="status-cmd">/ command</span>
+    </span>
+  </div>
+</div>
+
+<style>
+  .status-bar {
+    position: fixed;
+    bottom: 3.5rem;
+    left: 0;
+    right: 0;
+    z-index: 49;
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 0.125rem 1rem;
+    font-size: 1.125rem;
+    color: var(--text-muted);
+  }
+
+  .status-bar-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .status-left {
+    color: var(--text-secondary);
+  }
+
+  .status-page {
+    color: var(--cyan);
+  }
+
+  .status-right {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .status-sep {
+    color: var(--border);
+  }
+
+  .status-help { color: var(--gold-dim); }
+  .status-nav { color: var(--text-muted); }
+  .status-cmd { color: var(--text-muted); }
+
+  @media (max-width: 640px) {
+    .status-right { display: none; }
+  }
+</style>

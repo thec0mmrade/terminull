@@ -1,0 +1,75 @@
+---
+interface Props {
+  title?: string;
+  class?: string;
+}
+
+const { title, class: className } = Astro.props;
+---
+
+<div class:list={['box-frame', className]}>
+  {title ? (
+    <div class="box-frame-top">
+      <span class="box-corner">┌─</span>
+      <span class="box-title">[ {title} ]</span>
+      <span class="box-line-fill">─┐</span>
+    </div>
+  ) : (
+    <div class="box-frame-top-plain">┌{'─'.repeat(76)}┐</div>
+  )}
+  <div class="box-frame-content">
+    <slot />
+  </div>
+  <div class="box-frame-bottom">└{'─'.repeat(76)}┘</div>
+</div>
+
+<style>
+  .box-frame {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    margin: 1rem 0;
+    overflow: hidden;
+  }
+
+  .box-frame-top, .box-frame-top-plain, .box-frame-bottom {
+    color: var(--border-bright);
+    white-space: nowrap;
+    overflow: hidden;
+    font-size: 1.25rem;
+    line-height: 1.2;
+  }
+
+  .box-frame-top {
+    display: flex;
+  }
+
+  .box-corner {
+    color: var(--border-bright);
+    flex-shrink: 0;
+  }
+
+  .box-title {
+    color: var(--cyan);
+    flex-shrink: 0;
+    padding: 0 0.25rem;
+  }
+
+  .box-line-fill {
+    color: var(--border-bright);
+    overflow: hidden;
+    flex: 1;
+  }
+
+  .box-line-fill::before {
+    content: '────────────────────────────────────────────────────────────────────────────';
+  }
+
+  .box-frame-content {
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    padding: 0.75rem 1rem;
+  }
+
+  .box-frame-content :global(p:last-child) {
+    margin-bottom: 0;
+  }
+</style>

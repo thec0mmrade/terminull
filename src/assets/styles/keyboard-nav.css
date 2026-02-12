@@ -1,0 +1,213 @@
+/* Keyboard navigation styles */
+
+/* Navigable item highlight */
+[data-nav-item] {
+  transition: background-color 0.1s;
+}
+
+[data-nav-item].nav-active {
+  background-color: var(--bg-highlight);
+}
+
+[data-nav-item].nav-active::before {
+  content: '>';
+  color: var(--green);
+  position: absolute;
+  left: -1.25rem;
+  animation: blink-cursor 1s step-end infinite;
+}
+
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Menu item navigation */
+.bbs-menu [data-nav-item] {
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.bbs-menu [data-nav-item].nav-active {
+  background-color: var(--bg-highlight);
+  border-left: 2px solid var(--green);
+  padding-left: calc(1.5rem - 2px);
+}
+
+.bbs-menu [data-nav-item].nav-active::before {
+  left: 0.25rem;
+}
+
+/* Article list navigation */
+.article-list [data-nav-item] {
+  position: relative;
+}
+
+.article-list [data-nav-item].nav-active {
+  background-color: var(--bg-highlight);
+}
+
+/* Help overlay */
+.help-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 5, 5, 0.9);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+
+.help-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.help-overlay-content {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-bright);
+  padding: 1.5rem 2rem;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.help-overlay h2 {
+  color: var(--gold);
+  margin-bottom: 1rem;
+  font-size: 1.75rem;
+}
+
+.help-overlay .help-section {
+  margin-bottom: 1.25rem;
+}
+
+.help-overlay .help-section h3 {
+  color: var(--cyan);
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+}
+
+.help-overlay .help-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.help-overlay .help-key {
+  color: var(--green);
+  font-weight: bold;
+  min-width: 8rem;
+}
+
+.help-overlay .help-desc {
+  color: var(--text-secondary);
+}
+
+.help-overlay .help-close {
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 1rem;
+}
+
+/* Command prompt */
+.bbs-prompt {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--bg-deep);
+  border-top: 1px solid var(--border);
+  padding: 0.5rem 1rem;
+}
+
+.bbs-prompt-inner {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.bbs-prompt .prompt-feedback {
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+  min-height: 1.5rem;
+}
+
+.bbs-prompt .prompt-feedback.error {
+  color: var(--red);
+}
+
+.bbs-prompt .prompt-input-line {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.bbs-prompt .prompt-prefix {
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.bbs-prompt .prompt-prefix .user {
+  color: var(--green);
+}
+
+.bbs-prompt .prompt-prefix .host {
+  color: var(--cyan);
+}
+
+.bbs-prompt .prompt-prefix .path {
+  color: var(--gold);
+}
+
+.bbs-prompt input {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: inherit;
+  outline: none;
+  flex: 1;
+  caret-color: var(--green);
+  padding: 0;
+  margin-left: 0.5rem;
+}
+
+.bbs-prompt input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Status bar */
+.status-bar {
+  position: fixed;
+  bottom: 3.5rem;
+  left: 0;
+  right: 0;
+  z-index: 49;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 0.25rem 1rem;
+  font-size: 1.125rem;
+  color: var(--text-muted);
+}
+
+.status-bar-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+}
+
+.status-bar .status-left {
+  color: var(--text-secondary);
+}
+
+.status-bar .status-right {
+  color: var(--text-muted);
+}

@@ -1,0 +1,114 @@
+---
+// Help overlay shown with '?' key
+---
+
+<div class="help-overlay" id="help-overlay" role="dialog" aria-label="Keyboard shortcuts" aria-hidden="true">
+  <div class="help-overlay-content">
+    <h2>KEYBOARD SHORTCUTS</h2>
+
+    <div class="help-section">
+      <h3>Navigation</h3>
+      <div class="help-row">
+        <span class="help-key">j / ↓</span>
+        <span class="help-desc">Move down</span>
+      </div>
+      <div class="help-row">
+        <span class="help-key">k / ↑</span>
+        <span class="help-desc">Move up</span>
+      </div>
+      <div class="help-row">
+        <span class="help-key">Enter</span>
+        <span class="help-desc">Select item</span>
+      </div>
+      <div class="help-row">
+        <span class="help-key">Escape / q</span>
+        <span class="help-desc">Go back</span>
+      </div>
+      <div class="help-row">
+        <span class="help-key">0-9</span>
+        <span class="help-desc">Quick jump to item #</span>
+      </div>
+    </div>
+
+    <div class="help-section">
+      <h3>Article Pages</h3>
+      <div class="help-row">
+        <span class="help-key">p</span>
+        <span class="help-desc">Previous article</span>
+      </div>
+      <div class="help-row">
+        <span class="help-key">n</span>
+        <span class="help-desc">Next article</span>
+      </div>
+    </div>
+
+    <div class="help-section">
+      <h3>Commands</h3>
+      <div class="help-row">
+        <span class="help-key">/ or :</span>
+        <span class="help-desc">Focus command prompt</span>
+      </div>
+      <div class="help-row">
+        <span class="help-key">?</span>
+        <span class="help-desc">Toggle this help</span>
+      </div>
+    </div>
+
+    <div class="help-section">
+      <h3>Command Prompt</h3>
+      <div class="help-row">
+        <span class="help-key">help</span>
+        <span class="help-desc">Show available commands</span>
+      </div>
+      <div class="help-row">
+        <span class="help-key">read &lt;num&gt;</span>
+        <span class="help-desc">Read article by number</span>
+      </div>
+      <div class="help-row">
+        <span class="help-key">ls</span>
+        <span class="help-desc">List articles in current volume</span>
+      </div>
+      <div class="help-row">
+        <span class="help-key">cd &lt;section&gt;</span>
+        <span class="help-desc">Navigate to section</span>
+      </div>
+      <div class="help-row">
+        <span class="help-key">search &lt;query&gt;</span>
+        <span class="help-desc">Search articles</span>
+      </div>
+      <div class="help-row">
+        <span class="help-key">crt</span>
+        <span class="help-desc">Toggle CRT scanline effect</span>
+      </div>
+      <div class="help-row">
+        <span class="help-key">clear</span>
+        <span class="help-desc">Clear screen</span>
+      </div>
+      <div class="help-row">
+        <span class="help-key">home</span>
+        <span class="help-desc">Go to main menu</span>
+      </div>
+      <div class="help-row">
+        <span class="help-key">back</span>
+        <span class="help-desc">Go back</span>
+      </div>
+    </div>
+
+    <div class="help-close">Press <strong>?</strong> or <strong>Escape</strong> to close</div>
+  </div>
+</div>
+
+<script>
+  function initHelp() {
+    const overlay = document.getElementById('help-overlay');
+    if (!overlay) return;
+
+    (window as any).toggleHelp = function() {
+      const active = overlay.classList.toggle('active');
+      overlay.setAttribute('aria-hidden', String(!active));
+    };
+  }
+
+  initHelp();
+  document.addEventListener('astro:after-swap', initHelp);
+</script>

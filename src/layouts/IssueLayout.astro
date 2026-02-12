@@ -1,0 +1,37 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  volume: number;
+}
+
+const { title, description, volume } = Astro.props;
+---
+
+<BaseLayout title={title} description={description} page={`VOL.${volume}`} volume={volume}>
+  <div class="issue-header">
+    <h1 class="issue-title">{title}</h1>
+    {description && <p class="issue-desc">{description}</p>}
+  </div>
+  <slot />
+</BaseLayout>
+
+<style>
+  .issue-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .issue-title {
+    color: var(--gold);
+    font-size: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .issue-desc {
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+  }
+</style>

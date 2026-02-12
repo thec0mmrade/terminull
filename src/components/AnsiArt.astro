@@ -1,0 +1,47 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+import { ansiToHtml } from '../lib/ansi-render';
+
+interface Props {
+  file?: string;
+  text?: string;
+  class?: string;
+}
+
+const { file, text, class: className } = Astro.props;
+
+let content = text || '';
+
+if (file) {
+  const artPath = path.join(process.cwd(), 'public', file);
+  try {
+    content = fs.readFileSync(artPath, 'utf-8');
+  } catch {
+    content = `[ANSI art file not found: ${file}]`;
+  }
+}
+
+const html = ansiToHtml(content);
+---
+
+<pre
+  class:list={['ansi-art', className]}
+  role="img"
+  aria-hidden="true"
+  set:html={html}
+/>
+
+<style>
+  .ansi-art {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    line-height: 1.1;
+    font-size: 1.125rem;
+    overflow-x: auto;
+    white-space: pre;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+  }
+</style>

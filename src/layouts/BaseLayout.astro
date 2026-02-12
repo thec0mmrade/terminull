@@ -1,0 +1,56 @@
+---
+import Seo from '../components/Seo.astro';
+import CrtEffect from '../components/CrtEffect.astro';
+import HelpOverlay from '../components/HelpOverlay.astro';
+import SearchOverlay from '../components/SearchOverlay.astro';
+import BbsPrompt from '../components/BbsPrompt.astro';
+import StatusBar from '../components/StatusBar.astro';
+import KeyboardNav from '../components/KeyboardNav.astro';
+import BbsHeader from '../components/BbsHeader.astro';
+import '../assets/styles/global.css';
+import '../assets/styles/terminal.css';
+import '../assets/styles/keyboard-nav.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  page?: string;
+  volume?: number;
+  type?: 'website' | 'article';
+}
+
+const { title, description, page = 'HOME', volume, type = 'website' } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet" />
+    <Seo title={title} description={description} type={type} />
+  </head>
+  <body>
+    <CrtEffect />
+    <KeyboardNav>
+      <div class="terminal">
+        <div class="connection-sequence" aria-hidden="true">
+          <div class="line"><span class="label">Connecting to</span><span class="value"> terminull.local</span><span class="label">...</span><span class="ok"> OK</span></div>
+          <div class="line"><span class="label">Verifying identity...</span><span class="value"> ANONYMOUS</span></div>
+          <div class="line"><span class="label">Loading system...</span><span class="ok"> READY</span></div>
+        </div>
+        <BbsHeader />
+        <main class="terminal-content" role="main">
+          <slot />
+        </main>
+      </div>
+    </KeyboardNav>
+    <StatusBar page={page} volume={volume} />
+    <BbsPrompt />
+    <HelpOverlay />
+    <SearchOverlay />
+  </body>
+</html>

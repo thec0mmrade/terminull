@@ -1,0 +1,212 @@
+---
+// Static search interface - loads search index at runtime
+---
+
+<div class="search-overlay" id="search-overlay" role="dialog" aria-label="Search" aria-hidden="true">
+  <div class="search-overlay-content">
+    <h2>SEARCH</h2>
+    <div class="search-input-wrap">
+      <span class="search-prefix">search&gt; </span>
+      <input
+        type="text"
+        id="search-input"
+        placeholder="Enter search query..."
+        autocomplete="off"
+        spellcheck="false"
+      />
+    </div>
+    <div class="search-results" id="search-results"></div>
+    <div class="search-close">Press <strong>Escape</strong> to close</div>
+  </div>
+</div>
+
+<script>
+  let searchIndex: any[] | null = null;
+
+  async function loadIndex() {
+    if (searchIndex) return searchIndex;
+    try {
+      const res = await fetch('/search-index.json');
+      searchIndex = await res.json();
+    } catch {
+      searchIndex = [];
+    }
+    return searchIndex;
+  }
+
+  function initSearch() {
+    const overlay = document.getElementById('search-overlay');
+    const input = document.getElementById('search-input') as HTMLInputElement;
+    const results = document.getElementById('search-results');
+    if (!overlay || !input || !results) return;
+
+    (window as any).openSearch = async function(query?: string) {
+      overlay.classList.add('active');
+      overlay.setAttribute('aria-hidden', 'false');
+      await loadIndex();
+      input.focus();
+      if (query) {
+        input.value = query;
+        doSearch(query);
+      }
+    };
+
+    (window as any).closeSearch = function() {
+      overlay.classList.remove('active');
+      overlay.setAttribute('aria-hidden', 'true');
+    };
+
+    function doSearch(query: string) {
+      if (!searchIndex || !results) return;
+      const q = query.toLowerCase().trim();
+      if (!q) {
+        results.innerHTML = '<div class="search-empty">Type to search...</div>';
+        return;
+      }
+
+      const matches = searchIndex.filter((entry: any) =>
+        entry.title.toLowerCase().includes(q) ||
+        entry.description.toLowerCase().includes(q) ||
+        entry.tags.some((t: string) => t.toLowerCase().includes(q)) ||
+        entry.author.toLowerCase().includes(q) ||
+        (entry.handle && entry.handle.toLowerCase().includes(q)) ||
+        entry.category.toLowerCase().includes(q)
+      );
+
+      if (matches.length === 0) {
+        results.innerHTML = `<div class="search-empty">No results for "${q}"</div>`;
+        return;
+      }
+
+      results.innerHTML = matches.map((m: any) =>
+        `<a href="/vol/${m.volume}/${m.slug}" class="search-result">
+          <span class="search-result__num">[${String(m.order).padStart(2, '0')}]</span>
+          <span class="search-result__title">${m.title}</span>
+          <span class="search-result__cat">[${m.category}]</span>
+        </a>`
+      ).join('');
+    }
+
+    input.addEventListener('input', () => doSearch(input.value));
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) (window as any).closeSearch();
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') (window as any).closeSearch();
+    });
+  }
+
+  initSearch();
+  document.addEventListener('astro:after-swap', initSearch);
+</script>
+
+<style>
+  .search-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 10vh;
+    background: rgba(5, 5, 5, 0.9);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+  }
+
+  .search-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .search-overlay-content {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-bright);
+    padding: 1.5rem 2rem;
+    max-width: 600px;
+    width: 90%;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  .search-overlay h2 {
+    color: var(--gold);
+    margin-bottom: 1rem;
+    font-size: 1.125rem;
+  }
+
+  .search-input-wrap {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 1rem;
+    background: var(--bg-primary);
+  }
+
+  .search-prefix {
+    color: var(--green);
+    white-space: nowrap;
+  }
+
+  .search-overlay input {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: inherit;
+    outline: none;
+    flex: 1;
+    caret-color: var(--green);
+  }
+
+  .search-overlay input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .search-results {
+    min-height: 2rem;
+  }
+
+  .search-empty {
+    color: var(--text-muted);
+    padding: 0.5rem 0;
+  }
+
+  :global(.search-result) {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+    text-decoration: none;
+  }
+
+  :global(.search-result:hover) {
+    background: var(--bg-highlight);
+  }
+
+  :global(.search-result__num) {
+    color: var(--cyan);
+    flex-shrink: 0;
+  }
+
+  :global(.search-result__title) {
+    color: var(--green);
+    flex: 1;
+  }
+
+  :global(.search-result__cat) {
+    color: var(--text-muted);
+    font-size: 1.125rem;
+  }
+
+  .search-close {
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 1.25rem;
+  }
+</style>

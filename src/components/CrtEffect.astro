@@ -1,0 +1,70 @@
+---
+// CRT effect is CSS-only, toggled via a class on the body
+// Default: off. Toggle with 'crt' command. Persisted in localStorage.
+---
+
+<div class="crt-overlay" aria-hidden="true"></div>
+
+<script>
+  function initCrt() {
+    const stored = localStorage.getItem('terminull-crt');
+    if (stored === 'on') {
+      document.body.classList.add('crt-enabled');
+    }
+    // Respect prefers-reduced-motion
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mq.matches) {
+      document.body.classList.remove('crt-enabled');
+    }
+  }
+
+  // Toggle function exposed globally for the command prompt
+  (window as any).toggleCrt = function() {
+    const enabled = document.body.classList.toggle('crt-enabled');
+    localStorage.setItem('terminull-crt', enabled ? 'on' : 'off');
+    return enabled;
+  };
+
+  initCrt();
+  document.addEventListener('astro:after-swap', initCrt);
+</script>
+
+<style is:global>
+  .crt-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    pointer-events: none;
+  }
+
+  .crt-enabled .crt-overlay {
+    display: block;
+    background:
+      repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15) 0px,
+        rgba(0, 0, 0, 0.15) 1px,
+        transparent 1px,
+        transparent 2px
+      ),
+      radial-gradient(
+        ellipse at center,
+        transparent 60%,
+        rgba(0, 0, 0, 0.4) 100%
+      );
+  }
+
+  .crt-enabled {
+    text-shadow: 0 0 2px rgba(175, 215, 0, 0.15);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .crt-overlay {
+      display: none !important;
+    }
+    .crt-enabled {
+      text-shadow: none !important;
+    }
+  }
+</style>

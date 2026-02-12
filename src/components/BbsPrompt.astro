@@ -1,0 +1,189 @@
+---
+// BBS Command Prompt - always visible at bottom of viewport
+// Progressive enhancement: works without JS (clickable links), enhanced with JS
+---
+
+<div class="bbs-prompt" id="bbs-prompt" role="search" aria-label="Command prompt">
+  <div class="bbs-prompt-inner">
+    <div class="prompt-feedback" id="prompt-feedback" aria-live="polite"></div>
+    <div class="prompt-input-line">
+      <span class="prompt-prefix">
+        <span class="user">guest</span>@<span class="host">terminull</span>:<span class="path">~</span>$
+      </span>
+      <input
+        type="text"
+        id="prompt-input"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="type 'help' for commands..."
+        aria-label="Command input"
+      />
+    </div>
+  </div>
+</div>
+
+<script>
+  function initPrompt() {
+    const input = document.getElementById('prompt-input') as HTMLInputElement;
+    const feedback = document.getElementById('prompt-feedback');
+    if (!input || !feedback) return;
+
+    const history: string[] = [];
+    let historyIndex = -1;
+
+    function showFeedback(msg: string, isError = false) {
+      if (!feedback) return;
+      feedback.textContent = msg;
+      feedback.className = 'prompt-feedback' + (isError ? ' error' : '');
+    }
+
+    function executeCommand(cmd: string) {
+      const trimmed = cmd.trim().toLowerCase();
+      if (!trimmed) return;
+
+      history.unshift(trimmed);
+      historyIndex = -1;
+
+      const parts = trimmed.split(/\s+/);
+      const command = parts[0];
+      const args = parts.slice(1).join(' ');
+
+      switch (command) {
+        case 'help':
+          window.location.href = '/help';
+          break;
+
+        case 'home':
+          window.location.href = '/';
+          break;
+
+        case 'back':
+          window.history.back();
+          break;
+
+        case 'clear':
+          showFeedback('');
+          window.scrollTo(0, 0);
+          break;
+
+        case 'ls':
+          // Navigate to current volume TOC or volume archive
+          const volumeMatch = window.location.pathname.match(/\/vol\/(\d+)/);
+          if (volumeMatch) {
+            window.location.href = `/vol/${volumeMatch[1]}`;
+          } else {
+            window.location.href = '/vol';
+          }
+          break;
+
+        case 'cd': {
+          const section = args.trim();
+          if (!section || section === '~' || section === 'home') {
+            window.location.href = '/';
+          } else if (section === 'vol' || section === 'archive') {
+            window.location.href = '/vol';
+          } else if (section === 'about') {
+            window.location.href = '/about';
+          } else if (section === 'manifesto') {
+            window.location.href = '/manifesto';
+          } else if (section === 'help') {
+            window.location.href = '/help';
+          } else if (section.match(/^vol\s*\d+$/)) {
+            const vol = section.replace(/\D/g, '');
+            window.location.href = `/vol/${vol}`;
+          } else {
+            showFeedback(`terminull: cd: ${section}: no such section`, true);
+          }
+          break;
+        }
+
+        case 'read': {
+          const num = args.trim();
+          if (!num) {
+            showFeedback('Usage: read <article_number>', true);
+            break;
+          }
+          // Try to find the article in the current volume
+          const volMatch = window.location.pathname.match(/\/vol\/(\d+)/);
+          const vol = volMatch ? volMatch[1] : '1';
+          // Look for nav items with the matching index
+          const navItem = document.querySelector(`[data-nav-index="${parseInt(num)}"]`);
+          if (navItem) {
+            const link = navItem.querySelector('a') as HTMLAnchorElement;
+            if (link) {
+              window.location.href = link.href;
+              break;
+            }
+          }
+          // Fallback: try direct navigation
+          showFeedback(`Looking up article #${num}...`);
+          window.location.href = `/vol/${vol}`;
+          break;
+        }
+
+        case 'vol': {
+          const vol = args.trim();
+          if (!vol) {
+            window.location.href = '/vol';
+          } else {
+            window.location.href = `/vol/${vol}`;
+          }
+          break;
+        }
+
+        case 'search': {
+          const query = args.trim();
+          if (!query) {
+            (window as any).openSearch?.();
+          } else {
+            (window as any).openSearch?.(query);
+          }
+          break;
+        }
+
+        case 'crt': {
+          const enabled = (window as any).toggleCrt?.();
+          showFeedback(`CRT effect ${enabled ? 'enabled' : 'disabled'}`);
+          break;
+        }
+
+        default:
+          showFeedback(`terminull: command not found: ${command}`, true);
+      }
+
+      input.value = '';
+    }
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        executeCommand(input.value);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (history.length > 0 && historyIndex < history.length - 1) {
+          historyIndex++;
+          input.value = history[historyIndex];
+        }
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (historyIndex > 0) {
+          historyIndex--;
+          input.value = history[historyIndex];
+        } else {
+          historyIndex = -1;
+          input.value = '';
+        }
+      } else if (e.key === 'Escape') {
+        input.blur();
+      }
+    });
+
+    // Global shortcut to focus prompt
+    (window as any).focusPrompt = function() {
+      input.focus();
+    };
+  }
+
+  initPrompt();
+  document.addEventListener('astro:after-swap', initPrompt);
+</script>

@@ -1,0 +1,60 @@
+---
+import { getCollection } from 'astro:content';
+import IssueLayout from '../../../layouts/IssueLayout.astro';
+import ArticleList from '../../../components/ArticleList.astro';
+import AsciiArt from '../../../components/AsciiArt.astro';
+
+export async function getStaticPaths() {
+  const allArticles = await getCollection('issues', ({ data }) => !data.draft);
+
+  const volumes = [...new Set(allArticles.map(a => a.data.volume))];
+
+  return volumes.map(vol => ({
+    params: { volume: String(vol) },
+    props: {
+      volume: vol,
+      articles: allArticles
+        .filter(a => a.data.volume === vol)
+        .map(a => ({
+          slug: a.id.replace(/.*\//, '').replace(/\.mdx?$/, ''),
+          data: a.data,
+        })),
+    },
+  }));
+}
+
+const { volume, articles } = Astro.props;
+---
+
+<IssueLayout
+  title={`Volume ${volume} -- Table of Contents`}
+  description={`terminull volume ${volume} article index.`}
+  volume={volume}
+>
+  <AsciiArt text={'═'.repeat(76)} color="muted" />
+
+  <ArticleList articles={articles} volume={volume} />
+
+  <div class="toc-footer">
+    <p>
+      Type <code>read &lt;num&gt;</code> to read an article, or use <code>j</code>/<code>k</code> to navigate.
+    </p>
+  </div>
+</IssueLayout>
+
+<style>
+  .toc-footer {
+    margin-top: 1.5rem;
+    color: var(--text-muted);
+    font-size: 1.25rem;
+  }
+
+  .toc-footer code {
+    color: var(--pink);
+    background: var(--bg-surface);
+    padding: 0.125rem 0.375rem;
+    border: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.25rem;
+  }
+</style>

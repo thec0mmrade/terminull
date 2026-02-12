@@ -1,0 +1,17 @@
+{
+  "name": "terminull",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^4.3.13",
+    "ansi_up": "^6.0.6",
+    "astro": "^5.17.1",
+    "unist-util-visit": "^5.1.0"
+  }
+}

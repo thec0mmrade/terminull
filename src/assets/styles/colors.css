@@ -1,0 +1,36 @@
+:root {
+  /* Backgrounds */
+  --bg-deep: #050505;
+  --bg-primary: #0a0a0a;
+  --bg-surface: #111111;
+  --bg-highlight: #1a1a1a;
+
+  /* Green */
+  --green: #afd700;
+  --green-dim: #5f8700;
+  --green-bright: #d7ff5f;
+
+  /* Gold */
+  --gold: #ffd700;
+  --gold-dim: #af8700;
+
+  /* Pink */
+  --pink: #ff5fd7;
+  --pink-dim: #af5f87;
+
+  /* Cyan */
+  --cyan: #5fd7ff;
+  --cyan-dim: #5f87af;
+
+  /* Red */
+  --red: #ff5f5f;
+
+  /* Text */
+  --text-primary: #d0d0d0;
+  --text-secondary: #808080;
+  --text-muted: #4a4a4a;
+
+  /* Borders */
+  --border: #333333;
+  --border-bright: #555555;
+}

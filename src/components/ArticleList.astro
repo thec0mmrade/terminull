@@ -1,0 +1,160 @@
+---
+import CategoryBadge from './CategoryBadge.astro';
+
+interface Article {
+  slug: string;
+  data: {
+    title: string;
+    author: string;
+    handle?: string;
+    order: number;
+    category: string;
+    description: string;
+  };
+}
+
+interface Props {
+  articles: Article[];
+  volume: number;
+}
+
+const { articles, volume } = Astro.props;
+const sorted = [...articles].sort((a, b) => a.data.order - b.data.order);
+---
+
+<div class="article-list">
+  <div class="article-list__header">
+    <span class="article-list__col-num">#</span>
+    <span class="article-list__col-title">TITLE</span>
+    <span class="article-list__col-author">AUTHOR</span>
+    <span class="article-list__col-cat">CATEGORY</span>
+  </div>
+  <div class="article-list__divider">{'─'.repeat(76)}</div>
+  {sorted.map((article) => (
+    <div class="article-list__row" data-nav-item data-nav-index={article.data.order}>
+      <a href={`/vol/${volume}/${article.slug}`} class="article-list__link">
+        <span class="article-list__num">
+          {String(article.data.order).padStart(2, '0')}
+        </span>
+        <span class="article-list__title-col">
+          <span class="article-list__title">{article.data.title}</span>
+          <span class="article-list__desc">{article.data.description}</span>
+        </span>
+        <span class="article-list__author">
+          {article.data.handle ? `~${article.data.handle}` : article.data.author}
+        </span>
+        <span class="article-list__cat">
+          <CategoryBadge category={article.data.category} />
+        </span>
+      </a>
+    </div>
+  ))}
+  <div class="article-list__divider">{'─'.repeat(76)}</div>
+  <div class="article-list__footer">
+    {sorted.length} articles in volume {volume}
+  </div>
+</div>
+
+<style>
+  .article-list {
+    font-size: 1.25rem;
+  }
+
+  .article-list__header {
+    display: flex;
+    gap: 1rem;
+    color: var(--gold);
+    font-weight: bold;
+    padding: 0.25rem 0;
+    text-transform: uppercase;
+    font-size: 1.125rem;
+    letter-spacing: 0.05em;
+  }
+
+  .article-list__divider {
+    color: var(--border);
+    overflow: hidden;
+    white-space: nowrap;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.125rem;
+    line-height: 1.2;
+  }
+
+  .article-list__col-num { width: 2rem; flex-shrink: 0; }
+  .article-list__col-title { flex: 1; }
+  .article-list__col-author { width: 10rem; flex-shrink: 0; }
+  .article-list__col-cat { width: 10rem; flex-shrink: 0; }
+
+  .article-list__row {
+    position: relative;
+    transition: background-color 0.1s;
+  }
+
+  .article-list__row:hover {
+    background-color: var(--bg-highlight);
+  }
+
+  .article-list__row.nav-active {
+    background-color: var(--bg-highlight);
+    border-left: 2px solid var(--green);
+  }
+
+  .article-list__link {
+    display: flex;
+    gap: 1rem;
+    padding: 0.5rem 0;
+    text-decoration: none;
+    align-items: flex-start;
+  }
+
+  .article-list__num {
+    color: var(--cyan);
+    font-weight: bold;
+    width: 2rem;
+    flex-shrink: 0;
+  }
+
+  .article-list__title-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .article-list__title {
+    color: var(--green);
+  }
+
+  .article-list__link:hover .article-list__title {
+    color: var(--green-bright);
+  }
+
+  .article-list__desc {
+    color: var(--text-muted);
+    font-size: 1.125rem;
+  }
+
+  .article-list__author {
+    color: var(--text-secondary);
+    width: 10rem;
+    flex-shrink: 0;
+  }
+
+  .article-list__cat {
+    width: 10rem;
+    flex-shrink: 0;
+  }
+
+  .article-list__footer {
+    color: var(--text-muted);
+    font-size: 1.125rem;
+    padding: 0.5rem 0;
+  }
+
+  @media (max-width: 640px) {
+    .article-list__header { display: none; }
+    .article-list__link { flex-wrap: wrap; }
+    .article-list__author, .article-list__cat { width: auto; font-size: 1.125rem; }
+    .article-list__col-author, .article-list__col-cat { display: none; }
+  }
+</style>

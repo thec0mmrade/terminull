@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BbsMenu from '../../components/BbsMenu.astro';
+
+// For now, just volume 1
+const volumes = [
+  { label: 'Volume 1', href: '/vol/1', description: 'June 2025 -- Inaugural Issue' },
+];
+---
+
+<BaseLayout title="Archive" description="terminull volume archive." page="ARCHIVE">
+  <h1 class="page-title">VOLUME ARCHIVE</h1>
+
+  <BbsMenu items={volumes} title="Available Volumes" />
+
+  <div class="archive-footer">
+    <p>More volumes coming soon. Type <code>home</code> to return to main menu.</p>
+  </div>
+</BaseLayout>
+
+<style>
+  .page-title {
+    color: var(--gold);
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .archive-footer {
+    margin-top: 2rem;
+    color: var(--text-muted);
+    font-size: 1.25rem;
+  }
+
+  .archive-footer code {
+    color: var(--pink);
+    background: var(--bg-surface);
+    padding: 0.125rem 0.375rem;
+    border: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.25rem;
+  }
+</style>

@@ -1,0 +1,57 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+
+interface Props {
+  file?: string;
+  text?: string;
+  color?: 'green' | 'gold' | 'cyan' | 'pink' | 'red' | 'muted';
+  class?: string;
+  center?: boolean;
+}
+
+const { file, text, color = 'green', class: className, center = false } = Astro.props;
+
+let content = text || '';
+
+if (file) {
+  const artPath = path.join(process.cwd(), 'public', file);
+  try {
+    content = fs.readFileSync(artPath, 'utf-8');
+  } catch {
+    content = `[art file not found: ${file}]`;
+  }
+}
+---
+
+<pre
+  class:list={['ascii-art', `ascii-art--${color}`, { 'ascii-art--center': center }, className]}
+  role="img"
+  aria-hidden="true"
+  set:html={content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+/>
+
+<style>
+  .ascii-art {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    line-height: 1.1;
+    font-size: 1.125rem;
+    overflow-x: auto;
+    white-space: pre;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+  }
+
+  .ascii-art--center {
+    text-align: center;
+  }
+
+  .ascii-art--green { color: var(--green); }
+  .ascii-art--gold { color: var(--gold); }
+  .ascii-art--cyan { color: var(--cyan); }
+  .ascii-art--pink { color: var(--pink); }
+  .ascii-art--red { color: var(--red); }
+  .ascii-art--muted { color: var(--text-muted); }
+</style>

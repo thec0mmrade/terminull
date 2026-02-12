@@ -1,0 +1,55 @@
+---
+import { getCollection } from 'astro:content';
+import ArticleLayout from '../../../layouts/ArticleLayout.astro';
+
+export async function getStaticPaths() {
+  const allArticles = await getCollection('issues', ({ data }) => !data.draft);
+
+  return allArticles.map(article => {
+    const slug = article.id.replace(/.*\//, '').replace(/\.mdx?$/, '');
+    const volume = article.data.volume;
+    const order = article.data.order;
+
+    // Find prev/next in same volume
+    const sameVolume = allArticles
+      .filter(a => a.data.volume === volume)
+      .sort((a, b) => a.data.order - b.data.order);
+
+    const currentIdx = sameVolume.findIndex(a => a.data.order === order);
+    const prev = currentIdx > 0 ? sameVolume[currentIdx - 1] : null;
+    const next = currentIdx < sameVolume.length - 1 ? sameVolume[currentIdx + 1] : null;
+
+    return {
+      params: { volume: String(volume), slug },
+      props: {
+        article,
+        prevSlug: prev ? prev.id.replace(/.*\//, '').replace(/\.mdx?$/, '') : undefined,
+        prevTitle: prev?.data.title,
+        nextSlug: next ? next.id.replace(/.*\//, '').replace(/\.mdx?$/, '') : undefined,
+        nextTitle: next?.data.title,
+      },
+    };
+  });
+}
+
+const { article, prevSlug, prevTitle, nextSlug, nextTitle } = Astro.props;
+const { Content } = await article.render();
+---
+
+<ArticleLayout
+  title={article.data.title}
+  description={article.data.description}
+  author={article.data.author}
+  handle={article.data.handle}
+  date={article.data.date}
+  volume={article.data.volume}
+  order={article.data.order}
+  category={article.data.category}
+  tags={article.data.tags}
+  prevSlug={prevSlug}
+  prevTitle={prevTitle}
+  nextSlug={nextSlug}
+  nextTitle={nextTitle}
+>
+  <Content />
+</ArticleLayout>

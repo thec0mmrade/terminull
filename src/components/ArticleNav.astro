@@ -1,0 +1,97 @@
+---
+interface Props {
+  prevSlug?: string;
+  prevTitle?: string;
+  nextSlug?: string;
+  nextTitle?: string;
+  volume: number;
+}
+
+const { prevSlug, prevTitle, nextSlug, nextTitle, volume } = Astro.props;
+---
+
+<nav class="article-nav" aria-label="Article navigation">
+  <div class="article-nav__inner">
+    {prevSlug ? (
+      <a href={`/vol/${volume}/${prevSlug}`} class="article-nav__link article-nav__prev" title={prevTitle}>
+        <span class="article-nav__bracket">[</span>
+        <span class="article-nav__arrow">&lt;&lt;</span>
+        PREV
+        <span class="article-nav__bracket">]</span>
+      </a>
+    ) : (
+      <span class="article-nav__disabled">
+        <span class="article-nav__bracket">[</span>
+        <span class="article-nav__arrow">&lt;&lt;</span>
+        PREV
+        <span class="article-nav__bracket">]</span>
+      </span>
+    )}
+
+    <a href={`/vol/${volume}`} class="article-nav__link article-nav__index">
+      <span class="article-nav__bracket">[</span>
+      INDEX
+      <span class="article-nav__bracket">]</span>
+    </a>
+
+    {nextSlug ? (
+      <a href={`/vol/${volume}/${nextSlug}`} class="article-nav__link article-nav__next" title={nextTitle}>
+        <span class="article-nav__bracket">[</span>
+        NEXT
+        <span class="article-nav__arrow">&gt;&gt;</span>
+        <span class="article-nav__bracket">]</span>
+      </a>
+    ) : (
+      <span class="article-nav__disabled">
+        <span class="article-nav__bracket">[</span>
+        NEXT
+        <span class="article-nav__arrow">&gt;&gt;</span>
+        <span class="article-nav__bracket">]</span>
+      </span>
+    )}
+  </div>
+</nav>
+
+<style>
+  .article-nav {
+    margin: 2rem 0;
+    padding: 1rem 0;
+    border-top: 1px dashed var(--border);
+    border-bottom: 1px dashed var(--border);
+  }
+
+  .article-nav__inner {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    font-size: 1rem;
+  }
+
+  .article-nav__link {
+    color: var(--green);
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.15s;
+  }
+
+  .article-nav__link:hover {
+    color: var(--green-bright);
+    text-decoration: none;
+  }
+
+  .article-nav__bracket {
+    color: var(--text-muted);
+  }
+
+  .article-nav__arrow {
+    color: var(--cyan);
+  }
+
+  .article-nav__disabled {
+    color: var(--text-muted);
+  }
+
+  .article-nav__disabled .article-nav__arrow {
+    color: var(--text-muted);
+  }
+</style>

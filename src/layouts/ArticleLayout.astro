@@ -1,0 +1,123 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import ArticleNav from '../components/ArticleNav.astro';
+import CategoryBadge from '../components/CategoryBadge.astro';
+import '../assets/styles/glow-markdown.css';
+
+interface Props {
+  title: string;
+  description: string;
+  author: string;
+  handle?: string;
+  date: Date;
+  volume: number;
+  order: number;
+  category: string;
+  tags: string[];
+  prevSlug?: string;
+  prevTitle?: string;
+  nextSlug?: string;
+  nextTitle?: string;
+}
+
+const {
+  title, description, author, handle, date, volume,
+  order, category, tags, prevSlug, prevTitle, nextSlug, nextTitle,
+} = Astro.props;
+
+const dateStr = date.toISOString().split('T')[0];
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  page={`VOL.${volume} #${String(order).padStart(2, '0')}`}
+  volume={volume}
+  type="article"
+>
+  <article class="article">
+    <header class="article__header">
+      <div class="article__meta">
+        <span class="article__num">#{String(order).padStart(2, '0')}</span>
+        <CategoryBadge category={category} />
+        <span class="article__date">{dateStr}</span>
+      </div>
+      <div class="article__author">
+        by <span class="article__author-name">{author}</span>
+        {handle && <span class="article__handle">(~{handle})</span>}
+      </div>
+      {tags.length > 0 && (
+        <div class="article__tags">
+          {tags.map(tag => (
+            <span class="article__tag">#{tag}</span>
+          ))}
+        </div>
+      )}
+    </header>
+
+    <div class="glow-md">
+      <slot />
+    </div>
+
+    <ArticleNav
+      prevSlug={prevSlug}
+      prevTitle={prevTitle}
+      nextSlug={nextSlug}
+      nextTitle={nextTitle}
+      volume={volume}
+    />
+  </article>
+</BaseLayout>
+
+<style>
+  .article {
+    max-width: 80ch;
+  }
+
+  .article__header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .article__meta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+  }
+
+  .article__num {
+    color: var(--cyan);
+    font-weight: bold;
+  }
+
+  .article__date {
+    color: var(--text-muted);
+  }
+
+  .article__author {
+    color: var(--text-secondary);
+    margin-bottom: 0.375rem;
+  }
+
+  .article__author-name {
+    color: var(--green);
+  }
+
+  .article__handle {
+    color: var(--text-muted);
+  }
+
+  .article__tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .article__tag {
+    color: var(--text-muted);
+    font-size: 1.125rem;
+  }
+</style>
