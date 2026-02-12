@@ -1,43 +1,133 @@
-# Astro Starter Kit: Minimal
-
-```sh
-npm create astro@latest -- --template minimal
+```
+ ████████╗███████╗██████╗ ███╗   ███╗██╗███╗   ██╗██╗   ██╗██╗     ██╗
+ ╚══██╔══╝██╔════╝██╔══██╗████╗ ████║██║████╗  ██║██║   ██║██║     ██║
+    ██║   █████╗  ██████╔╝██╔████╔██║██║██╔██╗ ██║██║   ██║██║     ██║
+    ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║██║██║╚██╗██║██║   ██║██║     ██║
+    ██║   ███████╗██║  ██║██║ ╚═╝ ██║██║██║ ╚████║╚██████╔╝███████╗███████╗
+    ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝╚══════╝
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+**A hacker e-zine in the spirit of the underground.**
 
-## 🚀 Project Structure
+terminull is a static website that simulates a 1990s BBS terminal. It publishes
+technical deep-dives, security research, tool breakdowns, ASCII art, and
+creative writing for the hacker community. No tracking, no ads, no paywalls.
 
-Inside of your Astro project, you'll see the following folders and files:
+---
 
-```text
-/
-├── public/
+## Features
+
+- **BBS terminal aesthetic** -- VT323 pixel font, CRT scanline effect, connection sequence, box-drawing frames
+- **Keyboard-first navigation** -- `j`/`k` movement, number keys for quick jump, vim-style bindings
+- **Command prompt** -- `read`, `ls`, `cd`, `search`, `vol`, `crt`, and more
+- **Glow-inspired markdown** -- Article rendering styled after [Charmbracelet Glow](https://github.com/charmbracelet/glow) with gold headings, cyan sections, green blockquotes, pink inline code
+- **Admonitions** -- `[!WARN]`, `[!HACK]`, `[!INFO]` callout blocks for security content
+- **Zero JS required** -- Core content is pure static HTML/CSS. Interactive features are progressive enhancements
+- **Search** -- Build-time index, client-side filtering across titles, tags, authors, and categories
+- **ANSI art support** -- Render ANSI escape-coded art files alongside standard ASCII art
+
+## Quick Start
+
+```bash
+git clone https://github.com/YOUR_USERNAME/terminull.git
+cd terminull
+npm install
+npm run dev
+```
+
+Open `http://localhost:4321`. Navigate with keyboard or the command prompt at the bottom.
+
+## Commands
+
+```
+npm run dev       # Start dev server with hot reload
+npm run build     # Production build to dist/ (~800ms)
+npm run preview   # Serve the built site locally
+```
+
+## Project Structure
+
+```
+terminull/
 ├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+│   ├── content/
+│   │   ├── issues/vol1/       # Volume 1 articles (markdown)
+│   │   └── pages/             # Static pages (about, manifesto)
+│   ├── components/            # Astro components (15 files)
+│   ├── layouts/               # BaseLayout, ArticleLayout, IssueLayout
+│   ├── pages/                 # Route files
+│   ├── assets/styles/         # CSS (colors, terminal, glow-markdown, etc.)
+│   ├── lib/                   # Search index builder
+│   └── plugins/               # Remark/rehype plugins
+├── public/
+│   ├── art/                   # ASCII/ANSI art files
+│   └── fonts/                 # IBM Plex Mono (self-hosted)
+├── docs/                      # Documentation
+└── .github/workflows/         # GitHub Pages deployment
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Writing Articles
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+Articles are markdown files in `src/content/issues/vol{N}/`:
 
-Any static assets, like images, can be placed in the `public/` directory.
+```yaml
+---
+title: "Smashing the Stack in 2025"
+author: "Sarah Chen"
+handle: "stacksmash3r"
+date: 2025-06-15
+volume: 1
+order: 1
+category: guide
+tags: [exploitation, buffer-overflow, x86]
+description: "A modern guide to buffer overflow exploitation."
+draft: false
+---
+```
 
-## 🧞 Commands
+Categories: `editorial`, `guide`, `writeup`, `tool`, `security-news`, `ascii-art`, `fiction`, `interview`
 
-All commands are run from the root of the project, from a terminal:
+See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for the full writing guide.
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+## Documentation
 
-## 👀 Want to learn more?
+| Document | Audience |
+|----------|----------|
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Developers -- technical internals, rendering pipeline, component system |
+| [CONTRIBUTING.md](docs/CONTRIBUTING.md) | Authors -- article format, markdown features, submission workflow |
+| [DEVELOPMENT.md](docs/DEVELOPMENT.md) | Forkers -- customization, theming, extending the platform |
+| [EDITING.md](docs/EDITING.md) | Editors -- reviewing, publishing, volume management |
+| [ADMIN.md](docs/ADMIN.md) | Admins -- deployment, DNS, dependencies, security |
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+## Tech Stack
+
+| Dependency | Purpose |
+|------------|---------|
+| [Astro 5](https://astro.build) | Static site generator |
+| [@astrojs/mdx](https://docs.astro.build/en/guides/integrations-guide/mdx/) | MDX content collections |
+| [ansi_up](https://github.com/drudru/ansi_up) | ANSI escape code rendering |
+| [unist-util-visit](https://github.com/syntax-tree/unist-util-visit) | AST traversal for remark/rehype plugins |
+
+No frontend framework. No bundler config. No test runner. Four dependencies.
+
+## Deployment
+
+terminull builds to a static `dist/` directory. Deploy it anywhere:
+
+```bash
+npm run build
+# Upload dist/ to any static host
+```
+
+GitHub Pages deployment is preconfigured in `.github/workflows/deploy.yml`.
+Works out of the box with Cloudflare Pages, Netlify, Vercel, or any web server.
+
+## License
+
+This project is open source. The content (articles, art, text) and the code
+(templates, styles, components) may have different terms -- check individual
+files for attribution.
+
+---
+
+*The terminal never died. It was just waiting for you to connect.*

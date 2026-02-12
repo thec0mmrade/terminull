@@ -57,19 +57,56 @@
         return;
       }
 
+      // Scroll step for j/k in article (pager) mode
+      const scrollStep = 60;
+
       switch (e.key) {
         case 'j':
         case 'ArrowDown':
           e.preventDefault();
-          if (this.items.length === 0) break;
-          this.setActive(Math.min(this.activeIndex + 1, this.items.length - 1));
+          if (this.items.length === 0) {
+            window.scrollBy({ top: scrollStep, behavior: 'smooth' });
+          } else {
+            this.setActive(Math.min(this.activeIndex + 1, this.items.length - 1));
+          }
           break;
 
         case 'k':
         case 'ArrowUp':
           e.preventDefault();
-          if (this.items.length === 0) break;
-          this.setActive(Math.max(this.activeIndex - 1, 0));
+          if (this.items.length === 0) {
+            window.scrollBy({ top: -scrollStep, behavior: 'smooth' });
+          } else {
+            this.setActive(Math.max(this.activeIndex - 1, 0));
+          }
+          break;
+
+        case 'd':
+          if (this.items.length === 0) {
+            e.preventDefault();
+            window.scrollBy({ top: window.innerHeight / 2, behavior: 'smooth' });
+          }
+          break;
+
+        case 'u':
+          if (this.items.length === 0) {
+            e.preventDefault();
+            window.scrollBy({ top: -window.innerHeight / 2, behavior: 'smooth' });
+          }
+          break;
+
+        case 'g':
+          if (this.items.length === 0) {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+          break;
+
+        case 'G':
+          if (this.items.length === 0) {
+            e.preventDefault();
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+          }
           break;
 
         case 'Enter':

@@ -358,18 +358,36 @@ entire terminal content area.
 
 **Key bindings:**
 
+**List pages** (homepage, volume TOC -- pages with `[data-nav-item]` elements):
+
 | Key             | Action                                      |
 |-----------------|---------------------------------------------|
 | `j` / `ArrowDown` | Move selection down                       |
 | `k` / `ArrowUp`   | Move selection up                         |
 | `Enter`         | Click the link in the active item            |
+| `0-9`           | Find item with matching `data-nav-index`, select it, click after 150ms delay |
+
+**Article/static pages** (no `[data-nav-item]` elements -- pager mode):
+
+| Key             | Action                                      |
+|-----------------|---------------------------------------------|
+| `j` / `ArrowDown` | Scroll down (60px)                        |
+| `k` / `ArrowUp`   | Scroll up (60px)                          |
+| `d`             | Scroll half-page down                        |
+| `u`             | Scroll half-page up                          |
+| `g`             | Jump to top of page                          |
+| `G`             | Jump to bottom of page                       |
+| `p`             | Click `.article-nav__prev` link              |
+| `n`             | Click `.article-nav__next` link              |
+
+**Global** (all pages):
+
+| Key             | Action                                      |
+|-----------------|---------------------------------------------|
 | `Escape`        | Close help overlay if open, else `history.back()` |
 | `q`             | Close help overlay if open, else `history.back()` |
 | `?`             | Toggle help overlay                          |
 | `/` or `:`      | Focus command prompt                         |
-| `p`             | Click `.article-nav__prev` link              |
-| `n`             | Click `.article-nav__next` link              |
-| `0-9`           | Find item with matching `data-nav-index`, select it, click after 150ms delay |
 
 ### BbsPrompt Command Interpreter
 
