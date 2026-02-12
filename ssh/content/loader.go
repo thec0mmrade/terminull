@@ -33,15 +33,56 @@ type pageFrontmatter struct {
 	Description string `yaml:"description"`
 }
 
+// maxFileSize is the maximum markdown file size we'll read (1 MB).
+const maxFileSize = 1 << 20
+
 // volDirRegex matches "vol1", "vol2", etc.
 var volDirRegex = regexp.MustCompile(`^vol(\d+)$`)
+
+// isInsideDir checks that child is a descendant of parent after resolving symlinks.
+func isInsideDir(child, parent string) bool {
+	resolvedChild, err := filepath.EvalSymlinks(child)
+	if err != nil {
+		return false
+	}
+	resolvedParent, err := filepath.EvalSymlinks(parent)
+	if err != nil {
+		return false
+	}
+	// Ensure trailing separator for prefix check
+	resolvedParent = filepath.Clean(resolvedParent) + string(filepath.Separator)
+	resolvedChild = filepath.Clean(resolvedChild)
+	return strings.HasPrefix(resolvedChild, resolvedParent) || resolvedChild == strings.TrimSuffix(resolvedParent, string(filepath.Separator))
+}
+
+// safeReadFile reads a file if it's within baseDir and under maxFileSize.
+func safeReadFile(path, baseDir string) ([]byte, error) {
+	if !isInsideDir(path, baseDir) {
+		return nil, fmt.Errorf("path %s resolves outside content directory", path)
+	}
+	info, err := os.Stat(path)
+	if err != nil {
+		return nil, err
+	}
+	if info.Size() > maxFileSize {
+		return nil, fmt.Errorf("file %s exceeds max size (%d > %d)", path, info.Size(), maxFileSize)
+	}
+	return os.ReadFile(path)
+}
 
 // LoadStore scans contentDir for issues and pages, returns a populated Store.
 func LoadStore(contentDir string) *Store {
 	store := &Store{}
 
+	// Resolve the content directory to an absolute path for symlink checks
+	absContentDir, err := filepath.Abs(contentDir)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "warn: cannot resolve content dir %s: %v\n", contentDir, err)
+		return store
+	}
+
 	// Load issues
-	issuesDir := filepath.Join(contentDir, "issues")
+	issuesDir := filepath.Join(absContentDir, "issues")
 	volumeMap := make(map[int][]Article)
 
 	entries, err := os.ReadDir(issuesDir)
@@ -58,7 +99,7 @@ func LoadStore(contentDir string) *Store {
 			}
 			volNum, _ := strconv.Atoi(match[1])
 			volDir := filepath.Join(issuesDir, entry.Name())
-			articles := loadArticlesFromDir(volDir, volNum)
+			articles := loadArticlesFromDir(volDir, volNum, absContentDir)
 			for _, a := range articles {
 				if !a.Draft {
 					volumeMap[volNum] = append(volumeMap[volNum], a)
@@ -89,8 +130,8 @@ func LoadStore(contentDir string) *Store {
 	})
 
 	// Load pages
-	pagesDir := filepath.Join(contentDir, "pages")
-	store.Pages = loadPages(pagesDir)
+	pagesDir := filepath.Join(absContentDir, "pages")
+	store.Pages = loadPages(pagesDir, absContentDir)
 
 	fmt.Fprintf(os.Stderr, "content: loaded %d volumes, %d articles, %d pages\n",
 		len(store.Volumes), len(store.Articles), len(store.Pages))
@@ -98,7 +139,7 @@ func LoadStore(contentDir string) *Store {
 	return store
 }
 
-func loadArticlesFromDir(dir string, defaultVolume int) []Article {
+func loadArticlesFromDir(dir string, defaultVolume int, baseDir string) []Article {
 	var articles []Article
 
 	entries, err := os.ReadDir(dir)
@@ -116,9 +157,10 @@ func loadArticlesFromDir(dir string, defaultVolume int) []Article {
 			continue
 		}
 
-		data, err := os.ReadFile(filepath.Join(dir, name))
+		filePath := filepath.Join(dir, name)
+		data, err := safeReadFile(filePath, baseDir)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "warn: cannot read %s: %v\n", name, err)
+			fmt.Fprintf(os.Stderr, "warn: skipping %s: %v\n", name, err)
 			continue
 		}
 
@@ -164,7 +206,7 @@ func loadArticlesFromDir(dir string, defaultVolume int) []Article {
 	return articles
 }
 
-func loadPages(dir string) []Page {
+func loadPages(dir string, baseDir string) []Page {
 	var pages []Page
 
 	entries, err := os.ReadDir(dir)
@@ -179,8 +221,10 @@ func loadPages(dir string) []Page {
 			continue
 		}
 
-		data, err := os.ReadFile(filepath.Join(dir, name))
+		filePath := filepath.Join(dir, name)
+		data, err := safeReadFile(filePath, baseDir)
 		if err != nil {
+			fmt.Fprintf(os.Stderr, "warn: skipping page %s: %v\n", name, err)
 			continue
 		}
 

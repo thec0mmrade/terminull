@@ -14,12 +14,15 @@ generates pure HTML+CSS pages with zero JavaScript required for core content.
 Interactive features (keyboard navigation, command prompt, search, CRT effect)
 are layered on top as progressive enhancements.
 
-**Key constraints:**
+**Key constraints (web):**
 
 - Static output only (no SSR, no server)
 - All content authored in Markdown
 - No frontend framework (React, Vue, etc.) -- just Astro components
 - Single external runtime dependency: `ansi_up` for ANSI art rendering
+
+The project also includes a **Go SSH BBS server** (`ssh/`) that serves the same
+content as an interactive TUI over SSH. See the [SSH BBS](#ssh-bbs) section.
 
 **Dependencies** (`package.json`):
 
@@ -549,6 +552,157 @@ Background: `#111111`, foreground: `#d0d0d0`.
 - **ASCII art**: Marked `aria-hidden="true"` and `role="img"` (decorative)
 - **prefers-reduced-motion**: CRT scanline effect, text shadow, and print-line animation disabled when user prefers reduced motion
 - **`.visually-hidden`**: Utility class for screen-reader-only content
+
+---
+
+## SSH BBS
+
+The `ssh/` directory contains a Go application that serves terminull as an
+interactive TUI over SSH. It reads the same content from `src/content/` and
+renders it with the same visual identity (color palette, box frames, admonitions).
+
+### Stack
+
+| Package | Purpose |
+|---------|---------|
+| `github.com/charmbracelet/wish` | SSH server framework |
+| `github.com/charmbracelet/bubbletea` | TUI framework (Elm architecture) |
+| `github.com/charmbracelet/glamour` | Terminal markdown rendering |
+| `github.com/charmbracelet/lipgloss` | Terminal styling (xterm-256 colors) |
+| `github.com/charmbracelet/bubbles` | TUI components (viewport, text input) |
+| `gopkg.in/yaml.v3` | YAML frontmatter parsing |
+
+### Architecture
+
+Each SSH session gets its own Bubble Tea program running in alt-screen mode.
+The root `AppModel` (`ui/app.go`) manages a **screen stack** (capped at 20
+depth) -- navigation pushes screens, back pops them, prev/next replaces the
+top. At max depth, navigate replaces the top screen instead of pushing.
+
+**Session security:**
+- **Rate limiting**: `wish/ratelimiter` middleware -- 1 conn/sec sustained, burst of 10, tracks 256 IPs via LRU cache
+- **Username guard**: Middleware rejects usernames >64 bytes before the TUI starts. Display names are further sanitized (ANSI escape stripping, non-printable char removal, 32-char truncation)
+- **PTY clamping**: Client-supplied terminal dimensions clamped to width ∈ [40, 300], height ∈ [10, 100]
+- **Timeouts**: Idle sessions disconnect after 10 minutes; absolute max session duration is 2 hours
+
+```
+main.go (Wish SSH server)
+  └── Per-session Bubble Tea program
+        └── AppModel (screen stack router)
+              ├── HomeScreen (connection animation + menu)
+              ├── VolumeScreen (article table)
+              ├── ArticleScreen (viewport + Glamour markdown)
+              ├── PageScreen (static page viewport)
+              ├── HelpScreen (keyboard reference)
+              └── SearchScreen (live text input + results)
+```
+
+### Content Loading
+
+`content/loader.go` scans `src/content/` at startup:
+
+1. Scans `issues/vol{N}/` directories for `.md`/`.mdx` files
+2. Splits YAML frontmatter at `---` fences, parses with `gopkg.in/yaml.v3`
+3. Extracts slug from filename (`strings.TrimSuffix(name, ext)`)
+4. Skips `draft: true` articles
+5. Groups into sorted `Volume` structs, builds flat `Article` list
+6. Scans `pages/` for static pages (about, manifesto)
+
+Content is loaded once and shared read-only across all SSH sessions.
+
+**Security bounds in the loader:**
+- Files >1MB are skipped (`maxFileSize = 1 << 20`)
+- Symlinks are resolved via `filepath.EvalSymlinks`; files resolving outside the content directory are rejected
+
+### Markdown Preprocessing
+
+Before Glamour rendering, `content/preprocess.go` transforms:
+
+- **Admonitions**: `> [!WARN] text` → `> **[!] WARN:** text` (same approach as `ansi-text.ts`)
+- **Images**: `![alt](path)` → `[IMAGE: alt] — view at {siteURL}/vol/N/slug`
+- **Video/Audio**: `<video>`, `<audio>` → `[VIDEO]`/`[AUDIO]` placeholders
+
+### Theme
+
+`ui/theme/` maps the web's `colors.css` palette to xterm-256 Lip Gloss colors
+and defines a custom Glamour `StyleConfig` matching `glow-markdown.css`:
+
+- H1: gold (220), bold
+- H2: cyan (81), `## ` prefix
+- H3: green (148), `### ` prefix
+- Inline code: pink (206)
+- Blockquote: greenDim (100), `│ ` indent
+- Links: cyan (81), underline
+- Code block syntax highlighting: Chroma with hex colors (`#5fd7ff`, `#afd700`, etc.)
+
+### Key Bindings
+
+**List screens** (home, volume TOC):
+
+| Key | Action |
+|-----|--------|
+| `j` / `↓` | Move cursor down |
+| `k` / `↑` | Move cursor up |
+| `Enter` | Select item |
+| `1-9` | Quick jump to item |
+
+**Viewport screens** (article, page, help):
+
+| Key | Action |
+|-----|--------|
+| `j` / `↓` | Scroll down |
+| `k` / `↑` | Scroll up |
+| `d` | Half page down |
+| `u` | Half page up |
+| `g` / `G` | Top / bottom |
+| `p` / `n` | Prev / next article |
+
+**Global:**
+
+| Key | Action |
+|-----|--------|
+| `?` | Help |
+| `/` | Search |
+| `q` / `Esc` | Back |
+| `Ctrl+C` | Quit |
+
+### File Structure
+
+```
+ssh/
+├── main.go                    # Wish SSH server, graceful shutdown
+├── config.go                  # Env var + flag parsing
+├── go.mod / go.sum            # Go module (terminull-ssh)
+├── art/
+│   ├── logo.go                # go:embed of logo.txt
+│   └── logo.txt               # ASCII logo (copied from public/art/)
+├── content/
+│   ├── types.go               # Article, Page, Volume, Store structs
+│   ├── loader.go              # Filesystem scanner, frontmatter parser
+│   ├── preprocess.go          # Admonition + media regex transforms
+│   └── search.go              # In-memory substring search
+└── ui/
+    ├── app.go                 # Root model, screen stack router
+    ├── types/
+    │   └── types.go           # Shared types (Screen, NavigateMsg, BackMsg, ReplaceMsg)
+    ├── screens/
+    │   ├── home.go            # Connection animation + main menu
+    │   ├── volume.go          # Volume TOC article table
+    │   ├── article.go         # Glamour-rendered article in viewport
+    │   ├── page.go            # Static page in viewport
+    │   ├── help.go            # Keyboard reference
+    │   ├── search.go          # Live search with text input
+    │   └── nav.go             # Navigation command helpers
+    ├── components/
+    │   ├── header.go          # Logo + tagline + system info box
+    │   ├── statusbar.go       # Bottom status line
+    │   ├── boxframe.go        # Box-drawing character frame
+    │   └── chrome.go          # Dividers, footer, MOTD, connection lines
+    └── theme/
+        ├── colors.go          # xterm-256 Lip Gloss color constants
+        ├── styles.go          # Reusable Lip Gloss style objects
+        └── glamour.go         # Custom Glamour StyleConfig + Chroma theme
+```
 
 ---
 

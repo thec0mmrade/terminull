@@ -12,9 +12,22 @@ npm run preview   # Serve built dist/ locally
 
 No linter or test runner is configured. Verify changes with `npm run build` (builds 11 pages in ~800ms).
 
+### SSH BBS (Go)
+
+```bash
+cd ssh
+go build .                  # Build binary (needs Go 1.23+)
+go run . --port 2222        # Start SSH server
+ssh localhost -p 2222       # Connect in another terminal
+```
+
+Go is installed via [mise](https://mise.jdx.dev/). Use `mise exec -- go build` if `go` isn't on your PATH.
+
 ## Architecture
 
 **terminull** is a static hacker e-zine website built with Astro 5. It simulates a 90s BBS terminal with keyboard navigation, a command prompt, and glow-inspired markdown rendering. Zero JS required for core content; interactive features are progressive enhancements.
+
+The `ssh/` directory contains a Go SSH BBS server that provides an interactive TUI over SSH, using the same content and visual identity. See the **SSH BBS** section below.
 
 ### Layout Hierarchy
 
@@ -96,3 +109,29 @@ Content needs `padding-bottom: 6rem` to clear the fixed-position bottom bars:
 
 - **VT323** (Google Fonts) — Primary display font, pixel/bitmap aesthetic
 - **IBM Plex Mono** (self-hosted woff2 in `public/fonts/`) — Fallback, especially for box-drawing characters
+
+### SSH BBS (`ssh/`)
+
+A Go application providing a full interactive TUI over SSH. Connect via `ssh host -p 2222`.
+
+**Stack:** [Wish](https://github.com/charmbracelet/wish) (SSH server) + [Bubble Tea](https://github.com/charmbracelet/bubbletea) (TUI) + [Glamour](https://github.com/charmbracelet/glamour) (markdown) + [Lip Gloss](https://github.com/charmbracelet/lipgloss) (styling).
+
+**Content loading:** Reads raw markdown from `../src/content/` at runtime. Parses YAML frontmatter with `gopkg.in/yaml.v3`. Skips `draft: true` articles. Loaded once at startup, shared read-only across sessions.
+
+**Screen architecture:** Screen stack router (`ui/app.go`) manages push/pop/replace navigation. Each screen implements `Screen` interface (`Init`, `Update`, `View`, `StatusInfo`). Shared message types in `ui/types/` to avoid import cycles.
+
+**Screens:**
+- **Home** — Connection animation (4 phases via `tea.Tick`), logo, system info box, main menu
+- **Volume TOC** — Article table with category colors, j/k + number key navigation
+- **Article** — Glamour-rendered markdown in a viewport with metadata box, prev/next (p/n)
+- **Page** — Static page reader (about, manifesto)
+- **Help** — Keyboard reference in a box frame
+- **Search** — Live text input with substring matching across article fields
+
+**Theme:** Custom Glamour `StyleConfig` and Lip Gloss styles matching the web's `glow-markdown.css` palette. xterm-256 colors for Lip Gloss, hex colors for Chroma syntax highlighting.
+
+**Preprocessing:** Admonitions (`> [!WARN]`, etc.) converted to bold blockquote text. Images/video/audio replaced with `[IMAGE]`/`[VIDEO]`/`[AUDIO]` placeholders.
+
+**Security hardening:** Rate limiting via `wish/ratelimiter` (1 conn/sec, burst 10, 256-IP LRU). Username guard rejects usernames >64 bytes at the SSH layer; `sanitizeUsername()` strips ANSI escapes and non-printable chars, truncates to 32 for display. PTY dimensions clamped (width ≤300, height ≤100). Screen stack capped at 20 depth. Content loader enforces 1MB file size limit and symlink containment. Idle timeout: 10min, max session: 2hr.
+
+**Config:** Env vars with flag overrides — `TERMINULL_PORT` (2222), `TERMINULL_HOST` (0.0.0.0), `TERMINULL_CONTENT_DIR` (../src/content), `TERMINULL_SITE_URL`, `TERMINULL_HOST_KEY` (auto-generated).

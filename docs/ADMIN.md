@@ -40,11 +40,74 @@ In your repo's Settings > Pages, set the source to **GitHub Actions** (not
 The `concurrency` block (`group: pages`, `cancel-in-progress: false`) ensures
 only one deployment runs at a time and in-progress deploys are not cancelled.
 
+### GitHub Pages Hardening
+
+1. **Branch protection on `main`**: Require pull request reviews before merge.
+   Prevents direct pushes that bypass review (including malicious content files
+   that could affect the SSH BBS loader).
+2. **Environment protection rules**: In Settings > Environments > `github-pages`,
+   enable required reviewers for production deploys if needed.
+3. **Limit Actions permissions**: The workflow only needs `contents: read`,
+   `pages: write`, and `id-token: write`. Do not grant broader permissions.
+4. **Pin Action versions**: The workflow should pin actions to commit SHAs
+   rather than tags to prevent supply chain attacks:
+   ```yaml
+   - uses: actions/checkout@<commit-sha>     # instead of @v4
+   - uses: actions/setup-node@<commit-sha>   # instead of @v4
+   ```
+5. **Custom domain**: If using a custom domain, enable **Enforce HTTPS** in
+   Settings > Pages. Add a `CNAME` file to `public/` so Astro includes it in
+   `dist/`.
+6. **`site` URL mismatch**: `astro.config.mjs` currently has
+   `site: 'https://terminull.pages.dev'` (Cloudflare Pages URL). If deploying
+   to GitHub Pages, update this to your GitHub Pages URL so canonical URLs,
+   Open Graph tags, and sitemap are correct.
+
 ### Manual Deploy
 
 Use the `workflow_dispatch` trigger in GitHub Actions (Actions tab > "Deploy to
 GitHub Pages" > "Run workflow"). Useful for redeploying after a GitHub Pages
 issue without pushing a code change.
+
+### Deploying to Vercel
+
+Vercel auto-detects Astro projects. No `vercel.json` needed for basic setup.
+
+**Setup:**
+
+1. Import the repo at vercel.com/new
+2. Vercel detects Astro, sets build command (`npm run build`) and output
+   directory (`dist/`) automatically
+3. Set the `site` value in `astro.config.mjs` to your Vercel domain
+
+**Hardening:**
+
+1. **Environment variables**: If you add env vars, use Vercel's encrypted
+   environment variables (Settings > Environment Variables). Never commit
+   secrets to the repo.
+2. **Deployment protection**: Enable Vercel Authentication or password
+   protection on preview deployments to prevent leaking draft content on
+   preview URLs.
+3. **Production branch**: Lock production deployments to the `main` branch
+   only (Settings > Git > Production Branch).
+4. **Headers**: Add a `vercel.json` for security headers:
+   ```json
+   {
+     "headers": [
+       {
+         "source": "/(.*)",
+         "headers": [
+           { "key": "X-Content-Type-Options", "value": "nosniff" },
+           { "key": "X-Frame-Options", "value": "DENY" },
+           { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+         ]
+       }
+     ]
+   }
+   ```
+5. **Preview URL access**: By default, every push creates a preview deployment
+   with a public URL. Disable preview deployments or restrict access if draft
+   articles should not be publicly visible before merge.
 
 ### Alternative Hosts
 
@@ -219,6 +282,69 @@ database, no authentication.
 | Cookies          | None.                                                       |
 | Analytics        | None. No tracking by design.                                |
 | Third-party JS   | None.                                                       |
+
+### SSH BBS Attack Surface
+
+The SSH server (`ssh/`) accepts arbitrary connections from the internet and
+has a significantly larger attack surface than the static site.
+
+| Vector              | Mitigation                                                     |
+|---------------------|----------------------------------------------------------------|
+| Connection flood    | `wish/ratelimiter` middleware: 1 conn/sec sustained, burst 10, 256-IP LRU. Exceeding the limit rejects the connection. |
+| Username abuse      | Middleware rejects usernames >64 bytes before the TUI starts. Display names sanitized: ANSI escapes stripped, non-printable chars removed, truncated to 32 chars. |
+| PTY size abuse      | Client-supplied dimensions clamped: width ∈ [40, 300], height ∈ [10, 100]. Prevents excessive memory allocation in rendering. |
+| Session exhaustion  | Idle timeout: 10 minutes. Max session: 2 hours (`WithIdleTimeout`, `WithMaxTimeout`). |
+| Stack exhaustion    | Screen navigation stack capped at 20. At max depth, new screens replace the top instead of pushing. |
+| Content dir escape  | Symlinks resolved via `filepath.EvalSymlinks`; files resolving outside the content directory are rejected. |
+| Large file OOM      | Files >1MB skipped by the content loader (`maxFileSize = 1 << 20`). |
+
+**Firewall**: Only expose port 2222/tcp (or your configured SSH port). The
+server does not need any other inbound ports.
+
+**Host key**: Auto-generated on first run at `./ssh_host_ed25519_key`. Back
+up this file -- changing it will cause SSH client warnings for returning users.
+Override with `--host-key` flag or `TERMINULL_HOST_KEY` env var.
+
+### SSH BBS Deployment
+
+The SSH server is a long-running Go process. It cannot run on static hosts.
+
+**systemd (VPS)**:
+
+```ini
+[Unit]
+Description=terminull SSH BBS
+After=network.target
+
+[Service]
+Type=simple
+User=terminull
+WorkingDirectory=/opt/terminull/ssh
+ExecStart=/opt/terminull/ssh/terminull-ssh --port 2222 --content-dir /opt/terminull/src/content
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+**Docker**:
+
+```dockerfile
+FROM golang:1.24 AS build
+WORKDIR /app
+COPY ssh/ .
+RUN go build -o terminull-ssh .
+
+FROM debian:bookworm-slim
+COPY --from=build /app/terminull-ssh /usr/local/bin/
+COPY src/content /content
+EXPOSE 2222
+CMD ["terminull-ssh", "--content-dir", "/content"]
+```
+
+**Fly.io**: Supports TCP services natively. Expose port 2222 in `fly.toml`
+with `[[services]]` type `tcp`. Free tier may suffice for low traffic.
 
 ### External Requests
 

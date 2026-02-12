@@ -9,6 +9,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+const maxStackDepth = 20
+
 // AppModel is the root Bubble Tea model managing a screen stack.
 type AppModel struct {
 	store    *content.Store
@@ -138,7 +140,12 @@ func (a *AppModel) navigate(msg types.NavigateMsg) (*AppModel, tea.Cmd) {
 		return a, nil
 	}
 
-	a.stack = append(a.stack, screen)
+	if len(a.stack) >= maxStackDepth {
+		// At max depth — replace top screen instead of pushing
+		a.stack[len(a.stack)-1] = screen
+	} else {
+		a.stack = append(a.stack, screen)
+	}
 	return a, screen.Init()
 }
 

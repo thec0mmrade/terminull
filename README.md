@@ -26,6 +26,7 @@ creative writing for the hacker community. No tracking, no ads, no paywalls.
 - **Search** -- Build-time index, client-side filtering across titles, tags, authors, and categories
 - **ANSI art support** -- Render ANSI escape-coded art files alongside standard ASCII art
 - **Terminal-native reading** -- Every article has a `.txt` endpoint with ANSI colors, readable via `curl URL | less -R`
+- **SSH BBS** -- Full interactive TUI over SSH with vim navigation, scrollable viewports, and Glamour-rendered markdown
 
 ## Quick Start
 
@@ -60,6 +61,12 @@ terminull/
 │   ├── assets/styles/         # CSS (colors, terminal, glow-markdown, etc.)
 │   ├── lib/                   # Search index, ANSI text rendering
 │   └── plugins/               # Remark/rehype plugins
+├── ssh/                       # Go SSH BBS server
+│   ├── content/               # Content loader, frontmatter parser, search
+│   ├── ui/                    # Bubble Tea screens, components, theme
+│   ├── art/                   # Embedded ASCII logo
+│   ├── main.go                # Entry point (Wish SSH server)
+│   └── config.go              # Env/flag configuration
 ├── public/
 │   ├── art/                   # ASCII/ANSI art files
 │   └── fonts/                 # IBM Plex Mono (self-hosted)
@@ -83,6 +90,36 @@ curl https://your-site/vol/1/01-smashing-the-stack.txt | less -R
 ```
 
 The text endpoints mirror the BBS chrome (logo, system info, box frames) using xterm-256 ANSI escape codes. No browser needed.
+
+## SSH Access
+
+terminull also runs as a full interactive BBS over SSH:
+
+```bash
+ssh terminull.local -p 2222
+```
+
+You get a TUI with the same visual identity -- connection animation, ASCII logo, vim-style navigation (j/k/g/G), scrollable article reader, live search, and Glamour-rendered markdown. Each SSH session runs in alt-screen mode.
+
+### Running the SSH server
+
+```bash
+cd ssh
+go build .              # Requires Go 1.23+
+./terminull-ssh         # Starts on :2222
+```
+
+Configuration via environment variables or flags:
+
+| Variable | Flag | Default |
+|----------|------|---------|
+| `TERMINULL_PORT` | `--port` | 2222 |
+| `TERMINULL_HOST` | `--host` | 0.0.0.0 |
+| `TERMINULL_CONTENT_DIR` | `--content-dir` | ../src/content |
+| `TERMINULL_SITE_URL` | `--site-url` | https://terminull.local |
+| `TERMINULL_HOST_KEY` | `--host-key` | ./ssh_host_ed25519_key |
+
+The host key is auto-generated on first run.
 
 ## Writing Articles
 
@@ -119,6 +156,8 @@ See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for the full writing guide.
 
 ## Tech Stack
 
+### Web (Astro)
+
 | Dependency | Purpose |
 |------------|---------|
 | [Astro 5](https://astro.build) | Static site generator |
@@ -128,7 +167,15 @@ See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for the full writing guide.
 | [marked](https://github.com/markedjs/marked) | Markdown parser for ANSI text endpoints |
 | [marked-terminal](https://github.com/mikaelbr/marked-terminal) | Renders markdown as ANSI escape sequences |
 
-No frontend framework. No bundler config. No test runner. Six dependencies.
+### SSH BBS (Go)
+
+| Dependency | Purpose |
+|------------|---------|
+| [Wish](https://github.com/charmbracelet/wish) | SSH server framework |
+| [Bubble Tea](https://github.com/charmbracelet/bubbletea) | TUI framework |
+| [Glamour](https://github.com/charmbracelet/glamour) | Terminal markdown rendering |
+| [Lip Gloss](https://github.com/charmbracelet/lipgloss) | Terminal styling |
+| [Bubbles](https://github.com/charmbracelet/bubbles) | TUI components (viewport, text input) |
 
 ## Deployment
 

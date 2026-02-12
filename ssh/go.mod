@@ -1,8 +1,6 @@
 module terminull-ssh
 
-go 1.23.0
-
-toolchain go1.23.12
+go 1.24.0
 
 require (
 	github.com/charmbracelet/bubbles v0.20.0
@@ -36,6 +34,7 @@ require (
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
+	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
@@ -56,4 +55,5 @@ require (
 	golang.org/x/sys v0.32.0 // indirect
 	golang.org/x/term v0.31.0 // indirect
 	golang.org/x/text v0.24.0 // indirect
+	golang.org/x/time v0.14.0 // indirect
 )
