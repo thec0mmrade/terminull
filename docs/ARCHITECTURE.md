@@ -29,6 +29,8 @@ are layered on top as progressive enhancements.
 | `@astrojs/mdx`    | MDX support for content collections  |
 | `ansi_up`         | ANSI escape code to HTML conversion  |
 | `unist-util-visit` | AST traversal for remark/rehype plugins |
+| `marked`           | Markdown parser for ANSI text rendering |
+| `marked-terminal`  | Renders markdown as ANSI escape sequences |
 
 ---
 
@@ -96,11 +98,13 @@ article.id.replace(/.*\//, '').replace(/\.mdx?$/, '')
 // "vol1/01-smashing-the-stack.md" → "01-smashing-the-stack"
 ```
 
-This pattern appears in three files and must stay consistent:
+This pattern appears in five files and must stay consistent:
 
 - `src/pages/vol/[volume]/[slug].astro` -- article page generation
 - `src/pages/vol/[volume]/index.astro` -- volume TOC
 - `src/lib/search-index.ts` -- search index builder
+- `src/pages/vol/[volume]/[slug].txt.ts` -- ANSI text article endpoint
+- `src/pages/vol/[volume]/index.txt.ts` -- ANSI text volume TOC endpoint
 
 ### Route Generation
 
@@ -113,6 +117,10 @@ This pattern appears in three files and must stay consistent:
 | `src/pages/vol/[volume]/index.astro`  | `/vol/{n}`               | `issues` collection     |
 | `src/pages/vol/[volume]/[slug].astro` | `/vol/{n}/{slug}`        | `issues` collection     |
 | `src/pages/search-index.json.ts`      | `/search-index.json`     | `issues` collection     |
+| `src/pages/index.txt.ts`              | `/index.txt`             | `issues` collection     |
+| `src/pages/vol/[volume]/index.txt.ts` | `/vol/{n}/index.txt`     | `issues` collection     |
+| `src/pages/vol/[volume]/[slug].txt.ts`| `/vol/{n}/{slug}.txt`    | `issues` collection     |
+| `src/pages/[page].txt.ts`            | `/{page}.txt`            | `pages` collection      |
 
 Dynamic routes use `getStaticPaths()` to enumerate all valid parameter
 combinations at build time. Draft articles (`draft: true`) are filtered out
@@ -580,17 +588,22 @@ src/
 │   └── IssueLayout.astro       # Volume TOC layout
 ├── lib/
 │   ├── ansi-render.ts          # ANSI-to-HTML conversion wrapper
+│   ├── ansi-text.ts            # ANSI text rendering (marked-terminal) + BBS chrome builders
 │   └── search-index.ts         # Search index builder
 ├── pages/
 │   ├── index.astro             # Homepage
 │   ├── help.astro              # Command reference page
 │   ├── [page].astro            # Dynamic static pages
 │   ├── search-index.json.ts    # Search JSON endpoint
+│   ├── index.txt.ts            # ANSI text homepage
+│   ├── [page].txt.ts           # ANSI text static pages (about, manifesto)
 │   └── vol/
 │       ├── index.astro         # Volume archive
 │       └── [volume]/
 │           ├── index.astro     # Volume TOC
-│           └── [slug].astro    # Article page
+│           ├── index.txt.ts    # ANSI text volume TOC
+│           ├── [slug].astro    # Article page
+│           └── [slug].txt.ts   # ANSI text article
 └── plugins/
     ├── remark-bbs-admonitions.ts  # Admonition blockquote transform
     └── rehype-terminal-code.ts    # Code block language header

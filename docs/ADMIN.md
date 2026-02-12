@@ -93,7 +93,7 @@ sitemap pointer will point to different domains.
 
 ### Current Dependencies
 
-Four runtime dependencies, no devDependencies:
+Six runtime dependencies, no devDependencies:
 
 | Package            | Version   | Purpose                                |
 |--------------------|-----------|----------------------------------------|
@@ -101,6 +101,8 @@ Four runtime dependencies, no devDependencies:
 | `@astrojs/mdx`     | `^4.3.13` | MDX support for content collections    |
 | `ansi_up`          | `^6.0.6`  | ANSI escape code to HTML conversion    |
 | `unist-util-visit`  | `^5.1.0`  | AST traversal for remark/rehype plugins |
+| `marked`           | `^15`     | Markdown parser for ANSI text rendering |
+| `marked-terminal`  | `^7`      | Renders markdown as ANSI escape sequences |
 
 No linter, no test runner, no formatter configured.
 
@@ -145,10 +147,10 @@ build behavior. Before upgrading:
 All pages are static HTML and can be aggressively cached (long `Cache-Control`
 max-age or immutable).
 
-Exception: `/search-index.json` should be revalidated on deploy. It reflects
-the current set of published (non-draft) articles. If a CDN caches it with a
-long TTL, newly published articles won't appear in search until the cache
-expires.
+Exceptions: `/search-index.json` and `.txt` endpoints should be revalidated
+on deploy. They reflect the current set of published (non-draft) articles. If
+a CDN caches them with a long TTL, newly published articles won't appear in
+search or text endpoints until the cache expires.
 
 ---
 

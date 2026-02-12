@@ -25,6 +25,7 @@ creative writing for the hacker community. No tracking, no ads, no paywalls.
 - **Zero JS required** -- Core content is pure static HTML/CSS. Interactive features are progressive enhancements
 - **Search** -- Build-time index, client-side filtering across titles, tags, authors, and categories
 - **ANSI art support** -- Render ANSI escape-coded art files alongside standard ASCII art
+- **Terminal-native reading** -- Every article has a `.txt` endpoint with ANSI colors, readable via `curl URL | less -R`
 
 ## Quick Start
 
@@ -57,7 +58,7 @@ terminull/
 │   ├── layouts/               # BaseLayout, ArticleLayout, IssueLayout
 │   ├── pages/                 # Route files
 │   ├── assets/styles/         # CSS (colors, terminal, glow-markdown, etc.)
-│   ├── lib/                   # Search index builder
+│   ├── lib/                   # Search index, ANSI text rendering
 │   └── plugins/               # Remark/rehype plugins
 ├── public/
 │   ├── art/                   # ASCII/ANSI art files
@@ -65,6 +66,23 @@ terminull/
 ├── docs/                      # Documentation
 └── .github/workflows/         # GitHub Pages deployment
 ```
+
+## Reading in a Terminal
+
+Every page has an ANSI-colored `.txt` counterpart, built at compile time:
+
+```bash
+# Homepage
+curl https://your-site/index.txt
+
+# Volume table of contents
+curl https://your-site/vol/1/index.txt
+
+# Read an article with color
+curl https://your-site/vol/1/01-smashing-the-stack.txt | less -R
+```
+
+The text endpoints mirror the BBS chrome (logo, system info, box frames) using xterm-256 ANSI escape codes. No browser needed.
 
 ## Writing Articles
 
@@ -107,8 +125,10 @@ See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for the full writing guide.
 | [@astrojs/mdx](https://docs.astro.build/en/guides/integrations-guide/mdx/) | MDX content collections |
 | [ansi_up](https://github.com/drudru/ansi_up) | ANSI escape code rendering |
 | [unist-util-visit](https://github.com/syntax-tree/unist-util-visit) | AST traversal for remark/rehype plugins |
+| [marked](https://github.com/markedjs/marked) | Markdown parser for ANSI text endpoints |
+| [marked-terminal](https://github.com/mikaelbr/marked-terminal) | Renders markdown as ANSI escape sequences |
 
-No frontend framework. No bundler config. No test runner. Four dependencies.
+No frontend framework. No bundler config. No test runner. Six dependencies.
 
 ## Deployment
 

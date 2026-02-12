@@ -95,21 +95,24 @@ articles for the same author and verify spelling matches.
 Change `draft: true` to `draft: false` in the article's frontmatter (or remove
 the `draft` field entirely -- the default is `false`).
 
-The `draft` field is filtered in exactly three locations, all using the same
-pattern:
+The `draft` field is filtered in every location that queries the `issues`
+collection, all using the same pattern:
 
 ```javascript
 getCollection('issues', ({ data }) => !data.draft)
 ```
 
-| File                                    | Line | Purpose              |
-|-----------------------------------------|------|----------------------|
-| `src/pages/vol/[volume]/[slug].astro`   | 6    | Article page routes  |
-| `src/pages/vol/[volume]/index.astro`    | 8    | Volume TOC           |
-| `src/lib/search-index.ts`               | 16   | Search index         |
+| File                                      | Purpose                  |
+|-------------------------------------------|--------------------------|
+| `src/pages/vol/[volume]/[slug].astro`     | Article page routes      |
+| `src/pages/vol/[volume]/index.astro`      | Volume TOC               |
+| `src/lib/search-index.ts`                 | Search index             |
+| `src/pages/vol/[volume]/[slug].txt.ts`    | ANSI text article        |
+| `src/pages/vol/[volume]/index.txt.ts`     | ANSI text volume TOC     |
+| `src/pages/index.txt.ts`                  | ANSI text homepage       |
 
 There is no partial publishing. An article is either fully visible (in routes,
-TOC, and search) or fully hidden. No middle state.
+TOC, search, and text endpoints) or fully hidden. No middle state.
 
 ### Deploy
 
@@ -173,10 +176,11 @@ verify uniqueness manually.
 
 ### What Auto-Generates
 
-Volume TOC pages (`/vol/{N}`) and article pages (`/vol/{N}/{slug}`) are
+Volume TOC pages (`/vol/{N}`), article pages (`/vol/{N}/{slug}`), and their
+ANSI text counterparts (`/vol/{N}/index.txt`, `/vol/{N}/{slug}.txt`) are all
 created automatically via `getStaticPaths()`. No manual route configuration
 is needed. As long as articles have the correct `volume` field and `draft:
-false`, they appear.
+false`, they appear in both HTML and text endpoints.
 
 ---
 

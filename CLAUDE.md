@@ -39,7 +39,7 @@ Astro 5 content collection IDs include the directory path and `.md` extension. S
 ```javascript
 article.id.replace(/.*\//, '').replace(/\.mdx?$/, '')
 ```
-This pattern appears in `[slug].astro`, `[volume]/index.astro`, and `search-index.ts`. Keep them consistent.
+This pattern appears in `[slug].astro`, `[volume]/index.astro`, `search-index.ts`, and the `.txt` endpoint routes. Keep them consistent.
 
 ### CSS Architecture
 
@@ -67,6 +67,18 @@ All interactive scripts re-initialize on `astro:after-swap` to survive client-si
 
 - **remark-bbs-admonitions.ts** — Converts `> [!WARN]`, `> [!HACK]`, `> [!INFO]` blockquotes into styled admonition blocks with CSS classes
 - **rehype-terminal-code.ts** — Prepends a language label header div inside `<pre>` elements that contain `<code class="language-*">`
+
+### ANSI Text Endpoints
+
+`src/lib/ansi-text.ts` provides ANSI-colored terminal text rendering: color constants (xterm-256 mapped from `colors.css`), a `renderMarkdownToAnsi()` pipeline using `marked` + `marked-terminal`, and BBS chrome builders (header, box frame, article nav, footer).
+
+Static `.txt` API routes serve ANSI-formatted content for `curl URL | less -R`:
+- `src/pages/index.txt.ts` → `/index.txt` (homepage)
+- `src/pages/[page].txt.ts` → `/{page}.txt` (about, manifesto)
+- `src/pages/vol/[volume]/index.txt.ts` → `/vol/{n}/index.txt` (volume TOC)
+- `src/pages/vol/[volume]/[slug].txt.ts` → `/vol/{n}/{slug}.txt` (article content)
+
+Articles use `article.body` (raw markdown) instead of `article.render()` (HTML), with admonition syntax pre-processed via regex.
 
 ### Search
 

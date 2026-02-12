@@ -12,6 +12,8 @@
     "@astrojs/mdx": "^4.3.13",
     "ansi_up": "^6.0.6",
     "astro": "^5.17.1",
+    "marked": "^15.0.12",
+    "marked-terminal": "^7.3.0",
     "unist-util-visit": "^5.1.0"
   }
 }

@@ -99,6 +99,8 @@ The name "terminull" appears in these locations. Update all of them:
 | `src/pages/index.astro:15` | Page title and description |
 | `src/pages/index.astro:25-26` | MOTD welcome text |
 | `src/pages/index.astro:34` | Footer text |
+| `src/lib/ansi-text.ts:128,131` | Connection sequence and system info (`terminull.local`) |
+| `src/lib/ansi-text.ts:248` | Footer URL (`terminull.local`) |
 | `src/content/pages/about.md` | Content references to the name |
 | `src/content/pages/manifesto.md` | Content references to the name |
 | `public/robots.txt:4` | Sitemap URL |
