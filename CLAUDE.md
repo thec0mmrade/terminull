@@ -61,7 +61,7 @@ All interactive scripts re-initialize on `astro:after-swap` to survive client-si
 
 **KeyboardNav.astro** is a custom element (`<keyboard-nav>`) that handles j/k navigation, number keys, Enter, Escape, `/`, `?`, `p`/`n`. It targets elements with `[data-nav-item]` and `[data-nav-index]` attributes.
 
-**BbsPrompt.astro** implements a command interpreter: `help`, `read <num>`, `ls`, `cd <section>`, `search <query>`, `crt`, `vol <n>`, `home`, `back`, `clear`.
+**BbsPrompt.astro** implements a command interpreter: `help`, `read <num>`, `ls`, `cd <section>` (supports `..`, `~`, named sections, `vol N`), `search <query>`, `crt`, `vol <n>`, `home`, `back`, `clear`.
 
 ### Remark/Rehype Plugins
 

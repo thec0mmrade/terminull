@@ -1,18 +1,39 @@
 ---
-import AsciiArt from './AsciiArt.astro';
+import fs from 'node:fs';
+import path from 'node:path';
+import { getCollection } from 'astro:content';
 import BoxFrame from './BoxFrame.astro';
 
 const now = new Date();
 const dateStr = now.toISOString().split('T')[0];
+
+const articles = await getCollection('issues', ({ data }) => !data.draft);
+const latestVolume = articles.length > 0
+  ? Math.max(...articles.map(a => a.data.volume))
+  : 0;
+
+const tagBase = 'h a c k e r   e - z i n e';
+const tagline = latestVolume > 0
+  ? `[ ${tagBase}   / /   v o l . ${latestVolume} ]`
+  : `[ ${tagBase} ]`;
+
+const logoPath = path.join(process.cwd(), 'public', 'art', 'logo.txt');
+const logoLines = fs.readFileSync(logoPath, 'utf-8')
+  .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  .split('\n')
+  .filter(line => line.length > 0);
 ---
 
 <header class="bbs-header" role="banner">
   <a href="/" class="bbs-header__logo-link" aria-label="terminull home">
-    <AsciiArt file="/art/logo.txt" color="green" />
+    <pre class="ascii-art ascii-art--green" role="img" aria-hidden="true">{logoLines.map((line, i) => (
+      <span class={`print-line print-line-${4 + i}`} set:html={line + '\n'} />
+    ))}</pre>
+    <span class={`bbs-header__tagline print-line print-line-10`}>{tagline}</span>
   </a>
-  <BoxFrame title="SYSTEM INFO">
+  <BoxFrame title="SYSTEM INFO" printLineStart={11} printLineEnd={14}>
     <div class="system-info">
-      <div class="system-info__line">
+      <div class="system-info__line print-line print-line-12">
         <span class="label">Connected:</span>
         <span class="value">{dateStr}</span>
         <span class="sep">|</span>
@@ -22,7 +43,7 @@ const dateStr = now.toISOString().split('T')[0];
         <span class="label">Node:</span>
         <span class="value">terminull.local</span>
       </div>
-      <div class="system-info__line">
+      <div class="system-info__line print-line print-line-13">
         <span class="label">Protocol:</span>
         <span class="value">SSH-2.0</span>
         <span class="sep">|</span>
@@ -47,7 +68,32 @@ const dateStr = now.toISOString().split('T')[0];
     margin-bottom: 1rem;
   }
 
-  .bbs-header__logo-link:hover :global(.ascii-art) {
+  .bbs-header__tagline {
+    display: block;
+    text-align: center;
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    font-size: 1.125rem;
+    line-height: 1.1;
+    color: var(--green);
+    white-space: pre;
+  }
+
+  .ascii-art {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    line-height: 1.1;
+    font-size: 1.125rem;
+    overflow-x: auto;
+    white-space: pre;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+  }
+
+  .ascii-art--green { color: var(--green); }
+
+  .bbs-header__logo-link:hover .bbs-header__tagline,
+  .bbs-header__logo-link:hover .ascii-art {
     color: var(--green-bright);
   }
 

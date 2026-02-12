@@ -8,7 +8,7 @@ order: 3
 category: guide
 tags: [linux, kernel, rootkit, defense]
 description: "Understanding kernel rootkits from a defensive perspective - how they work and how to detect them."
-draft: false
+draft: true
 ---
 
 # Linux Kernel Rootkit Primer

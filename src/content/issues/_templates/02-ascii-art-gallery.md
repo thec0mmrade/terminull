@@ -8,7 +8,7 @@ order: 2
 category: ascii-art
 tags: [art, ascii, ansi, creative]
 description: "A curated collection of ASCII and ANSI art from the terminull community."
-draft: false
+draft: true
 ---
 
 # ASCII Art Gallery: Digital Graffiti

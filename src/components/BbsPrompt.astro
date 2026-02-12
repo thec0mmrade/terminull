@@ -80,6 +80,10 @@
           const section = args.trim();
           if (!section || section === '~' || section === 'home') {
             window.location.href = '/';
+          } else if (section === '..') {
+            const path = window.location.pathname.replace(/\/+$/, '');
+            const parent = path.substring(0, path.lastIndexOf('/')) || '/';
+            window.location.href = parent;
           } else if (section === 'vol' || section === 'archive') {
             window.location.href = '/vol';
           } else if (section === 'about') {

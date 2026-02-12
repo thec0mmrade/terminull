@@ -2,10 +2,8 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import BbsMenu from '../../components/BbsMenu.astro';
 
-// For now, just volume 1
-const volumes = [
-  { label: 'Volume 1', href: '/vol/1', description: 'June 2025 -- Inaugural Issue' },
-];
+// Add volumes here as they are published
+const volumes: { label: string; href: string; description: string }[] = [];
 ---
 
 <BaseLayout title="Archive" description="terminull volume archive." page="ARCHIVE">

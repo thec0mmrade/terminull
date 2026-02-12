@@ -157,17 +157,16 @@ verify uniqueness manually.
    src/content/issues/vol{N}/
    ```
 
-2. **Update the volumes array** in `src/pages/vol/index.astro:6-8`:
+2. **Update the volumes array** in `src/pages/vol/index.astro`:
    ```typescript
    const volumes = [
      { label: 'Volume 1', href: '/vol/1', description: 'June 2025 -- Inaugural Issue' },
-     { label: 'Volume 2', href: '/vol/2', description: 'December 2025 -- Second Issue' },
    ];
    ```
 
-3. **Update the homepage latest issue link** in `src/pages/index.astro:7`:
+3. **Add a `Latest Issue` menu item** to `src/pages/index.astro` if desired:
    ```typescript
-   { label: 'Latest Issue', href: '/vol/2', description: 'Volume 2 -- December 2025' },
+   { label: 'Latest Issue', href: '/vol/1', description: 'Volume 1 -- June 2025' },
    ```
 
 4. **Add articles** to the new directory with matching `volume` frontmatter.
@@ -189,7 +188,6 @@ The homepage is `src/pages/index.astro`. Key editable sections:
 
 ```typescript
 const menuItems = [
-  { label: 'Latest Issue', href: '/vol/1', description: 'Volume 1 -- June 2025' },
   { label: 'Archive', href: '/vol', description: 'All volumes' },
   { label: 'About', href: '/about', description: 'What is terminull?' },
   { label: 'Manifesto', href: '/manifesto', description: 'What we believe' },
@@ -197,8 +195,8 @@ const menuItems = [
 ];
 ```
 
-When publishing a new volume, update the `Latest Issue` entry's `href` and
-`description`.
+When publishing a new volume, add a `Latest Issue` entry pointing to the new
+volume's `href` and `description`.
 
 ### MOTD (lines 22-29)
 
@@ -206,7 +204,7 @@ When publishing a new volume, update the `Latest Issue` entry's `href` and
 <div class="motd">
   <p class="motd-label">[MESSAGE OF THE DAY]</p>
   <p class="motd-text">
-    Welcome to <strong>terminull</strong>, volume 1. ...
+    Welcome to <strong>terminull</strong>. ...
   </p>
 </div>
 ```

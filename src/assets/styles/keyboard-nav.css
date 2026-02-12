@@ -174,6 +174,7 @@
   outline: none;
   flex: 1;
   caret-color: var(--green);
+  caret-shape: block;
   padding: 0;
   margin-left: 0.5rem;
 }

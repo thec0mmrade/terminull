@@ -8,7 +8,7 @@ order: 1
 category: guide
 tags: [exploitation, buffer-overflow, x86, linux]
 description: "A modern guide to buffer overflow exploitation - from stack basics to shellcode."
-draft: false
+draft: true
 ---
 
 # Smashing the Stack in 2025

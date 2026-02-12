@@ -51,7 +51,7 @@ npm run preview   # Serve the built site locally
 terminull/
 ├── src/
 │   ├── content/
-│   │   ├── issues/vol1/       # Volume 1 articles (markdown)
+│   │   ├── issues/_templates/  # Template articles (drafts)
 │   │   └── pages/             # Static pages (about, manifesto)
 │   ├── components/            # Astro components (15 files)
 │   ├── layouts/               # BaseLayout, ArticleLayout, IssueLayout

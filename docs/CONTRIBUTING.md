@@ -30,18 +30,17 @@ Articles live in `src/content/issues/vol{N}/` where `{N}` is the volume number.
 
 ```
 src/content/issues/
-└── vol1/
+└── vol{N}/
     ├── 00-editorial.md
-    ├── 01-smashing-the-stack.md
-    ├── 02-ascii-art-gallery.md
-    ├── 03-kernel-rootkit-primer.md
-    └── 04-news-roundup.md
+    ├── 01-first-article.md
+    └── 02-second-article.mdx    # .mdx for video/audio embeds
 ```
 
 ### Naming Convention
 
 ```
-{order:2d}-{slug}.md
+{order:2d}-{slug}.md       # standard markdown
+{order:2d}-{slug}.mdx      # MDX (needed for video/audio embeds)
 ```
 
 - `order` -- two-digit zero-padded position in the volume TOC (e.g., `00`, `01`, `07`)
@@ -252,10 +251,34 @@ Renders as a dashed line. Use to separate major sections or before a sign-off.
 ### Images
 
 ```markdown
-![Screenshot of the exploit](./screenshot.png)
+![Screenshot of the exploit](/media/screenshot.png)
 ```
 
-Images get a subtle border and max-width: 100%.
+Images get a subtle border and max-width: 100%. Place files in `public/media/`.
+
+### Video (MDX only)
+
+Use `.mdx` file extension to embed `<video>` elements:
+
+```mdx
+<video src="/media/demo.mp4" controls>
+  Your browser does not support the video element.
+</video>
+```
+
+Videos get a border, dark surface background, and max-width: 100%.
+
+### Audio (MDX only)
+
+Use `.mdx` file extension to embed `<audio>` elements:
+
+```mdx
+<audio src="/media/clip.mp3" controls>
+  Your browser does not support the audio element.
+</audio>
+```
+
+Audio players render at full width. Place media files in `public/media/`.
 
 ---
 

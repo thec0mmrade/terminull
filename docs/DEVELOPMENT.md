@@ -63,7 +63,7 @@ terminull/
 │   ├── components/             # Astro components (15 files)
 │   ├── content/
 │   │   ├── config.ts           # Collection schemas
-│   │   ├── issues/vol1/        # Volume 1 articles
+│   │   ├── issues/_templates/   # Template articles (drafts)
 │   │   └── pages/              # Static pages
 │   ├── layouts/                # Layout templates (3 files)
 │   ├── lib/                    # Utility modules
@@ -118,8 +118,9 @@ figlet -f slant "MYSITE"
 toilet -f future "MYSITE"
 ```
 
-The logo is rendered by `AsciiArt.astro` in IBM Plex Mono at 1.125rem. Test
-how it looks at that size.
+The logo is rendered inline by `BbsHeader.astro` (each line wrapped in a span
+for staggered print-line animation) in IBM Plex Mono at 1.125rem. Test how it
+looks at that size.
 
 ### Colors
 
@@ -256,18 +257,16 @@ Use the `AnsiArt` component for ANSI escape-coded art:
    src/content/issues/vol2/
    ```
 
-2. Add an entry to the volumes array in `src/pages/vol/index.astro:6-8`:
+2. Add an entry to the volumes array in `src/pages/vol/index.astro`:
    ```typescript
    const volumes = [
      { label: 'Volume 1', href: '/vol/1', description: 'June 2025 -- Inaugural Issue' },
-     { label: 'Volume 2', href: '/vol/2', description: 'December 2025 -- Second Issue' },
    ];
    ```
 
-3. Update the homepage link in `src/pages/index.astro:7` if the latest volume
-   changed:
+3. Add a `Latest Issue` menu item to `src/pages/index.astro` if desired:
    ```typescript
-   { label: 'Latest Issue', href: '/vol/2', description: 'Volume 2 -- December 2025' },
+   { label: 'Latest Issue', href: '/vol/1', description: 'Volume 1 -- June 2025' },
    ```
 
 4. Add articles to the new volume directory. Each article's `volume` frontmatter

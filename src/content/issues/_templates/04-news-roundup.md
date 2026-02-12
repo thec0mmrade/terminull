@@ -8,7 +8,7 @@ order: 4
 category: security-news
 tags: [news, vulnerabilities, industry]
 description: "A curated roundup of the most significant security events and disclosures."
-draft: false
+draft: true
 ---
 
 # Security News Roundup: June 2025

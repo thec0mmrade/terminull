@@ -213,6 +213,7 @@ Terminal chrome and structural layout:
 - Connection sequence line styling
 - Section headings, dividers, link lists
 - Terminal footer
+- **Print-line animation** -- CSS-only staggered fade-in (`@keyframes print-line`) simulating BBS line-by-line printing. `.print-line` + `.print-line-{1-14}` classes applied to connection sequence, logo lines, tagline, and system info box. Each line fades in after a staggered delay (0ms–1200ms, ~1.2s total). Wrapped in `@media (prefers-reduced-motion: no-preference)` so everything appears instantly for users who prefer no motion.
 
 ### 4. `glow-markdown.css`
 
@@ -234,6 +235,9 @@ Charmbracelet/glow-inspired article rendering within `.glow-md`:
 | `em`           | Pink italic                                     |
 | `a`            | Cyan, underline                                 |
 | `hr`           | Dashed border                                   |
+| `img`          | Border, max-width: 100%                         |
+| `video`        | Border, dark surface background, max-width: 100% |
+| `audio`        | Full width, block display                       |
 | Admonitions    | Bordered boxes with colored headers (warn=gold, hack=green, info=cyan) |
 
 ### 5. `keyboard-nav.css`
@@ -287,12 +291,12 @@ Single breakpoint at **640px**:
 |----------------------|------------------------------------------------------|
 | `AsciiArt.astro`     | Renders ASCII art from `public/art/` files or inline text. Color variants: green, gold, cyan, pink, red, muted. Uses IBM Plex Mono. |
 | `AnsiArt.astro`      | Renders ANSI escape-coded art via `ansi_up` library. Reads from `public/art/` or inline text. |
-| `BoxFrame.astro`     | Box-drawing character frame with optional title. 76-char wide borders. |
+| `BoxFrame.astro`     | Box-drawing character frame with optional title. 76-char wide borders. Optional `printLineStart`/`printLineEnd` props enable staggered print-line animation on the frame borders. |
 | `BbsMenu.astro`      | Numbered menu list with `[00]` prefixed items. Assigns `data-nav-item` and `data-nav-index` attributes. |
 | `ArticleList.astro`  | Tabular article listing with columns: #, title, author, category. Sorted by `order`. Assigns nav attributes. |
 | `ArticleNav.astro`   | Prev/Next/Index navigation bar for articles.         |
 | `CategoryBadge.astro`| Colored `[category]` label. Color map: editorial=gold, ascii-art=pink, security-news=red, guide=cyan, writeup=green, tool=green, fiction=pink, interview=gold. |
-| `BbsHeader.astro`    | Site header: ASCII logo link + system info box with date, user, node, protocol details. |
+| `BbsHeader.astro`    | Site header: ASCII logo link (inline-rendered with per-line animation spans) + system info box with date, user, node, protocol details. |
 | `Seo.astro`          | `<title>`, meta description, canonical URL, Open Graph, Twitter Card tags. |
 
 ### Interactive Components
@@ -401,7 +405,7 @@ viewport. Commands are case-insensitive.
 | `back`             | `history.back()`                                 |
 | `clear`            | Clear feedback, scroll to top                    |
 | `ls`               | Navigate to current volume TOC or `/vol`         |
-| `cd <section>`     | Navigate to section: `~`/`home`=`/`, `vol`/`archive`=`/vol`, `about`, `manifesto`, `help`, `vol N`=`/vol/N` |
+| `cd <section>`     | Navigate to section: `~`/`home`=`/`, `..`=parent path, `vol`/`archive`=`/vol`, `about`, `manifesto`, `help`, `vol N`=`/vol/N` |
 | `read <num>`       | Find nav item by index and navigate, or fall back to volume page |
 | `vol [n]`          | Navigate to `/vol` or `/vol/{n}`                 |
 | `search [query]`   | Open search overlay, optionally pre-filled       |
@@ -535,7 +539,7 @@ Background: `#111111`, foreground: `#d0d0d0`.
 - **Focus management**: `a:focus-visible` outline (2px solid green), input caret color
 - **Keyboard-first**: Full site navigable via keyboard (j/k, Enter, Escape, number keys)
 - **ASCII art**: Marked `aria-hidden="true"` and `role="img"` (decorative)
-- **prefers-reduced-motion**: CRT scanline effect and text shadow disabled when user prefers reduced motion
+- **prefers-reduced-motion**: CRT scanline effect, text shadow, and print-line animation disabled when user prefers reduced motion
 - **`.visually-hidden`**: Utility class for screen-reader-only content
 
 ---

@@ -2,25 +2,29 @@
 interface Props {
   title?: string;
   class?: string;
+  printLineStart?: number;
+  printLineEnd?: number;
 }
 
-const { title, class: className } = Astro.props;
+const { title, class: className, printLineStart, printLineEnd } = Astro.props;
+const plTop = printLineStart != null ? `print-line print-line-${printLineStart}` : '';
+const plBottom = printLineEnd != null ? `print-line print-line-${printLineEnd}` : '';
 ---
 
 <div class:list={['box-frame', className]}>
   {title ? (
-    <div class="box-frame-top">
+    <div class:list={['box-frame-top', plTop]}>
       <span class="box-corner">┌─</span>
       <span class="box-title">[ {title} ]</span>
       <span class="box-line-fill">─┐</span>
     </div>
   ) : (
-    <div class="box-frame-top-plain">┌{'─'.repeat(76)}┐</div>
+    <div class:list={['box-frame-top-plain', plTop]}>┌{'─'.repeat(76)}┐</div>
   )}
   <div class="box-frame-content">
     <slot />
   </div>
-  <div class="box-frame-bottom">└{'─'.repeat(76)}┘</div>
+  <div class:list={['box-frame-bottom', plBottom]}>└{'─'.repeat(76)}┘</div>
 </div>
 
 <style>

@@ -8,7 +8,7 @@ order: 0
 category: editorial
 tags: [introduction, meta]
 description: "The inaugural editorial of terminull - a new voice in the underground."
-draft: false
+draft: true
 ---
 
 # Welcome to terminull

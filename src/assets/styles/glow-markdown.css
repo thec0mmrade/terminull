@@ -235,6 +235,21 @@
   border: 1px solid var(--border);
 }
 
+/* Video */
+.glow-md video {
+  max-width: 100%;
+  border: 1px solid var(--border);
+  margin: 1.25rem 0;
+  background: var(--bg-surface);
+}
+
+/* Audio */
+.glow-md audio {
+  display: block;
+  width: 100%;
+  margin: 1.25rem 0;
+}
+
 /* BBS Admonitions (added by remark plugin) */
 .glow-md .admonition {
   border: 1px solid var(--border);
