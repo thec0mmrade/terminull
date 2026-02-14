@@ -1,9 +1,20 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import BbsMenu from '../../components/BbsMenu.astro';
 
-// Add volumes here as they are published
-const volumes: { label: string; href: string; description: string }[] = [];
+const allArticles = await getCollection('issues', ({ data }) => !data.draft);
+const volumeNums = [...new Set(allArticles.map(a => a.data.volume))].sort((a, b) => a - b);
+
+const volumes = volumeNums.map(vol => {
+  const articles = allArticles.filter(a => a.data.volume === vol);
+  const count = articles.length;
+  return {
+    label: `Volume ${String(vol).padStart(2, '0')}`,
+    href: `/vol/${vol}`,
+    description: `${count} article${count !== 1 ? 's' : ''}`,
+  };
+});
 ---
 
 <BaseLayout title="Archive" description="terminull volume archive." page="ARCHIVE">

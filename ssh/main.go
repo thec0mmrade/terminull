@@ -13,12 +13,14 @@ import (
 	"unicode"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/ssh"
 	"github.com/charmbracelet/wish"
 	"github.com/charmbracelet/wish/activeterm"
 	"github.com/charmbracelet/wish/bubbletea"
 	"github.com/charmbracelet/wish/logging"
 	"github.com/charmbracelet/wish/ratelimiter"
+	"github.com/muesli/termenv"
 	"golang.org/x/time/rate"
 
 	"terminull-ssh/content"
@@ -76,6 +78,12 @@ func clamp(v, lo, hi int) int {
 }
 
 func main() {
+	// Force ANSI256 color profile. The server process has no TTY, so
+	// lipgloss detects Ascii profile and drops all color codes. SSH
+	// clients connecting will support 256 colors.
+	lipgloss.SetColorProfile(termenv.ANSI256)
+	lipgloss.SetHasDarkBackground(true)
+
 	cfg := LoadConfig()
 
 	// Load content at startup
