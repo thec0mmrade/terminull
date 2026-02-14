@@ -156,7 +156,7 @@ sitemap pointer will point to different domains.
 
 ### Current Dependencies
 
-Six runtime dependencies, no devDependencies:
+Six runtime dependencies and two dev dependencies:
 
 | Package            | Version   | Purpose                                |
 |--------------------|-----------|----------------------------------------|
@@ -166,6 +166,8 @@ Six runtime dependencies, no devDependencies:
 | `unist-util-visit`  | `^5.1.0`  | AST traversal for remark/rehype plugins |
 | `marked`           | `^15`     | Markdown parser for ANSI text rendering |
 | `marked-terminal`  | `^7`      | Renders markdown as ANSI escape sequences |
+| `puppeteer`        | `^24`     | Headless Chrome for PDF generation (dev) |
+| `pdf-lib`          | `^1.17`   | PDF page manipulation for booklet imposition (dev) |
 
 No linter, no test runner, no formatter configured.
 

@@ -40,6 +40,17 @@ The dev server runs at `http://localhost:4321` with hot reload.
 
 No linter or test runner is configured. Verify changes with `npm run build`.
 
+### Print Zine Export
+
+```bash
+npm run zine                  # Export latest volume as PDF
+npm run zine -- --volume 1    # Export specific volume
+```
+
+Outputs two PDFs to `dist/zine/`: a reader version (5.5"×8.5" portrait) and a
+booklet imposition (11"×8.5" landscape, 2-up saddle-stitch spreads). Requires
+`puppeteer` and `pdf-lib` (dev dependencies, installed via `npm install`).
+
 ---
 
 ## Project Structure
@@ -69,6 +80,8 @@ terminull/
 │   ├── lib/                    # Utility modules
 │   ├── pages/                  # Route files
 │   └── plugins/                # Remark/rehype plugins
+├── scripts/
+│   └── export-zine.js          # Print zine PDF exporter
 ├── .github/workflows/
 │   └── deploy.yml              # Cloudflare Pages deployment
 └── docs/                       # Documentation (you are here)

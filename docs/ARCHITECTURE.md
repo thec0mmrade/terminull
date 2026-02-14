@@ -34,6 +34,8 @@ content as an interactive TUI over SSH. See the [SSH BBS](#ssh-bbs) section.
 | `unist-util-visit` | AST traversal for remark/rehype plugins |
 | `marked`           | Markdown parser for ANSI text rendering |
 | `marked-terminal`  | Renders markdown as ANSI escape sequences |
+| `puppeteer`        | Headless Chrome for PDF generation (dev) |
+| `pdf-lib`          | PDF page manipulation for booklet imposition (dev) |
 
 ---
 
@@ -706,9 +708,65 @@ ssh/
 
 ---
 
+## Print Zine Export
+
+`scripts/export-zine.js` converts volume content into printable half-letter
+PDFs. Run with `npm run zine` or `npm run zine -- --volume N`.
+
+### Pipeline
+
+```
+Raw markdown (src/content/issues/vol{N}/)
+  → Parse frontmatter (built-in YAML parser, filter drafts, sort by order)
+  → Preprocess admonitions + media placeholders
+  → Render HTML via marked (custom renderer: link footnotes, styled admonitions)
+  → Assemble document (cover + TOC + articles + back cover)
+  → Puppeteer prints to 5.5"×8.5" portrait PDF
+  → pdf-lib imposes into 11"×8.5" landscape booklet spreads
+```
+
+### Content Loading
+
+Reads raw markdown from `src/content/issues/vol{N}/`. Has its own simple YAML
+frontmatter parser (no external YAML dependency). Filters `draft: true`
+articles and sorts by `order` field.
+
+### Markdown Rendering
+
+Custom `marked` renderer collects links as footnotes (superscript `[N]` in
+text, URL list at article end). Admonitions (`> [!WARN]`, etc.) converted to
+styled `<div>` blocks. Images rendered with grayscale filter and captions.
+Video/audio replaced with placeholders.
+
+### Print Stylesheet
+
+B&W design, IBM Plex Mono (base64-embedded woff2), 9pt body. Article titles
+uppercase with double-line borders, `##`/`###` heading prefixes, monospace `*`
+list bullets, bordered code blocks with language labels, admonition boxes with
+bold type labels. `h2` forces page breaks; code blocks and table rows avoid
+page breaks.
+
+### Booklet Imposition
+
+After Puppeteer generates the portrait PDF, `pdf-lib` rearranges pages into
+2-up landscape letter sheets in saddle-stitch order. Pages padded to a multiple
+of 4. Pre-compensated for short-edge duplex binding.
+
+### Output
+
+Two files in `dist/zine/`:
+
+- `terminull-vol{N}.pdf` -- Reader version (5.5"×8.5" portrait pages)
+- `terminull-vol{N}-booklet.pdf` -- Booklet imposition (11"×8.5" landscape, 2-up saddle-stitch spreads)
+
+---
+
 ## File Reference
 
 ```
+scripts/
+└── export-zine.js              # Print zine PDF export
+
 src/
 ├── assets/styles/
 │   ├── colors.css              # Color palette custom properties
