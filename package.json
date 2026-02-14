@@ -6,7 +6,12 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "zine": "node scripts/export-zine.js"
+  },
+  "devDependencies": {
+    "pdf-lib": "^1.17.1",
+    "puppeteer": "^24.2.0"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.13",
