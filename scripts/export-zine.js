@@ -267,7 +267,7 @@ function buildCSS(regularFontB64, boldFontB64) {
     body {
       font-family: 'IBM Plex Mono', 'Courier New', monospace;
       font-size: 9pt;
-      line-height: 1.4;
+      line-height: 1.3;
       color: #000;
       background: #fff;
     }
@@ -426,20 +426,30 @@ function buildCSS(regularFontB64, boldFontB64) {
       margin: 0.15in 0;
     }
 
+    .article-body h1,
+    .article-body h2,
+    .article-body h3,
+    .article-body h4 {
+      break-after: avoid;
+      page-break-after: avoid;
+    }
+
     .article-body h1 {
       font-size: 14pt;
       font-weight: 700;
       text-transform: uppercase;
       border-bottom: 3px double #000;
       padding-bottom: 0.05in;
-      margin: 0.25in 0 0.1in 0;
+      margin: 0.2in 0 0.1in 0;
     }
 
     .article-body h2 {
       font-size: 12pt;
       font-weight: 700;
       text-decoration: underline;
-      margin: 0.2in 0 0.08in 0;
+      margin: 0.15in 0 0.08in 0;
+      break-before: page;
+      page-break-before: always;
     }
 
     .article-body h2::before {
@@ -451,7 +461,7 @@ function buildCSS(regularFontB64, boldFontB64) {
     .article-body h3 {
       font-size: 10pt;
       font-weight: 700;
-      margin: 0.15in 0 0.05in 0;
+      margin: 0.12in 0 0.05in 0;
     }
 
     .article-body h3::before {
@@ -465,7 +475,7 @@ function buildCSS(regularFontB64, boldFontB64) {
     }
 
     .article-body p {
-      margin: 0.08in 0;
+      margin: 0.06in 0;
       text-align: justify;
     }
 
@@ -485,10 +495,11 @@ function buildCSS(regularFontB64, boldFontB64) {
     }
 
     .article-body .code-block {
-      margin: 0.1in 0;
+      margin: 0.08in 0;
       border: 1px solid #999;
       background: #f5f5f5;
       page-break-inside: avoid;
+      break-inside: avoid;
     }
 
     .article-body .code-lang {
@@ -517,15 +528,17 @@ function buildCSS(regularFontB64, boldFontB64) {
     .article-body blockquote {
       border-left: 2pt solid #000;
       padding-left: 0.15in;
-      margin: 0.1in 0;
+      margin: 0.06in 0;
       font-style: italic;
       color: #333;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
 
     .article-body .admonition {
       border: 1.5pt solid #000;
       padding: 0.08in 0.12in;
-      margin: 0.1in 0;
+      margin: 0.06in 0;
       page-break-inside: avoid;
     }
 
@@ -538,7 +551,7 @@ function buildCSS(regularFontB64, boldFontB64) {
     .article-body ul {
       list-style: none;
       padding-left: 0.2in;
-      margin: 0.08in 0;
+      margin: 0.06in 0;
     }
 
     .article-body ul li {
@@ -553,7 +566,7 @@ function buildCSS(regularFontB64, boldFontB64) {
     .article-body ol {
       list-style: none;
       padding-left: 0.2in;
-      margin: 0.08in 0;
+      margin: 0.06in 0;
       counter-reset: ol-counter;
     }
 
@@ -656,6 +669,8 @@ function buildCSS(regularFontB64, boldFontB64) {
       font-size: 6.5pt;
       line-height: 1.4;
       color: #333;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
 
     .footnotes-header {
