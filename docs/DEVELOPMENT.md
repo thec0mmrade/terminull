@@ -130,7 +130,6 @@ The name "terminull" appears in these locations. Update all of them:
 | `src/pages/index.astro:25-26` | MOTD welcome text |
 | `src/pages/index.astro:34` | Footer text |
 | `src/lib/ansi-text.ts:128,131` | Connection sequence and system info (`terminull.local`) |
-| `src/lib/ansi-text.ts:248` | Footer URL (`terminull.local`) |
 | `src/content/pages/about.md` | Content references to the name |
 | `src/content/pages/manifesto.md` | Content references to the name |
 
@@ -288,7 +287,8 @@ Use the `AnsiArt` component for ANSI escape-coded art:
    src/content/volumes/vol2/
    ```
    (`src/content/volumes/` is a separate, private git repo. The engine repo
-   ignores it. Set `TERMINULL_VOLUMES_DIR` to keep it elsewhere.)
+   ignores it. Set `TERMINULL_VOLUMES_DIR` to an absolute path to keep it
+   elsewhere; a relative value resolves differently for the Go BBS.)
 
 2. The Archive page (`/vol`) lists volumes automatically; there is no array to
    update.

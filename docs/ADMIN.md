@@ -35,7 +35,8 @@ Without it, a neutral development default is used (`src/lib/site-url.js`). DNS i
 
 1. Update `TERMINULL_SITE_URL` and `DEPLOY_HOST` in `deploy.env`
 2. Update the hostname in the server's `/etc/caddy/Caddyfile` and the DNS record
-3. `npm run publish`
+3. If `DEPLOY_HOST` changed, ssh in once by hand (`ssh -p 2200 deploy@<new host>`) so the host key is in `known_hosts`: publish uses `BatchMode=yes` and will not prompt
+4. `npm run publish`
 
 ---
 
@@ -255,7 +256,7 @@ monitoring. The footer says "no tracking" and means it.
 
 ### Verify the Site Is Live
 
-`npm run publish` verifies HTTPS and the SSH banner itself after every switch. To check by hand:
+`npm run publish` verifies HTTPS, that `/release.txt` names the new release, and the SSH banner itself after every switch. To check by hand:
 
 ```bash
 curl -I https://terminull.example.com/
@@ -265,7 +266,7 @@ ssh -p 2200 deploy@terminull.example.com cat /srv/terminull/current/RELEASE   # 
 
 ### Verify Build Health
 
-`npm run build` and `npm test` locally. A failed publish never leaves a half-uploaded site live: the previous release stays in place (or is restored).
+`npm run build` and `npm test` locally. A failed publish never leaves a half-uploaded site live: the previous release stays in place (or is restored). The exception is the very first publish: with no previous release to return to, a release that fails verification stays live (see [DEPLOY.md](./DEPLOY.md)).
 
 ### Verify Content
 

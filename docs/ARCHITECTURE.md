@@ -834,7 +834,7 @@ preflight (deploy.env, content repo clean/pushed, ssh)
   → stage (site/, content/, bin/, bbs.env)
   → rsync to <DEPLOY_PATH>/releases/<name>/, write RELEASE
   → switch `current` (relative symlink, mv -T) + restart terminull-bbs
-  → verify HTTPS and SSH banner; roll back on failure; prune old releases
+  → verify HTTPS, /release.txt and SSH banner; roll back on failure; prune old releases
 ```
 
 The public URL comes from `TERMINULL_SITE_URL` (`src/lib/site-url.js`) everywhere. Caddy serves `current/site`; the BBS reads `current/content` and keeps its host key in `shared/`. Server setup, config keys and rollback: [DEPLOY.md](./DEPLOY.md).

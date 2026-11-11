@@ -146,7 +146,7 @@ sudo systemctl enable terminull-bbs
 sudo systemctl reload caddy
 ```
 
-The sudoers rule lets `deploy` run exactly `sudo systemctl restart terminull-bbs` and nothing else.
+The sudoers rule lets `deploy` run exactly `systemctl restart terminull-bbs` as root and nothing else. Publish calls it as `sudo -n systemctl restart terminull-bbs`, so a missing rule fails at once instead of waiting for a password.
 
 Note `enable` without `start`: until the first publish creates `current`, the BBS unit has nothing to run and fails. That is expected. Caddy will serve an empty or missing site until then, too.
 
@@ -159,7 +159,7 @@ cd /path/to/terminull
 git clone <private-content-repo-url> src/content/volumes
 ```
 
-The repo root must contain the `vol1/`, `vol2/`... folders. It must have an upstream branch: publish refuses to deploy content that is uncommitted or unpushed, so every live state is backed up. To keep the checkout elsewhere, set `TERMINULL_VOLUMES_DIR` in `deploy.env` (see below) and in your shell for `npm run dev`.
+The repo root must contain the `vol1/`, `vol2/`... folders. It must have an upstream branch: publish refuses to deploy content that is uncommitted or unpushed, so every live state is backed up. To keep the checkout elsewhere, set `TERMINULL_VOLUMES_DIR` to an absolute path, in `deploy.env` (see below) and in your shell for `npm run dev` and the local BBS (a relative value resolves against the repo root for the Node scripts but against its working directory (usually `ssh/`) for the Go BBS).
 
 ## 8. Laptop: deploy.env
 
@@ -212,7 +212,7 @@ nix shell nixpkgs#go nixpkgs#chromium -c env -u LD_LIBRARY_PATH sh -c 'PUPPETEER
 
 (Alternatively set `PUPPETEER_EXECUTABLE_PATH` in `deploy.env` and keep `go` on your PATH.)
 
-It checks the content repo and ssh access, builds (zines for every volume, the site, a static Linux BBS binary), uploads to a new release directory, points `current` at it, restarts the BBS, and verifies HTTPS and the SSH banner. On failure it points `current` back at the previous release and restarts the BBS (on the very first publish there is no previous release, so a failed check leaves the new one in place; read the error, fix it, publish again). Because that failed release stays live, fix it before announcing the site. `--config <path>` uses another config file.
+It checks the content repo and ssh access, builds (zines for every volume, the site, a static Linux BBS binary), uploads to a new release directory, points `current` at it, restarts the BBS, and verifies HTTPS (including that `/release.txt` names the new release) and the SSH banner. On failure it points `current` back at the previous release and restarts the BBS (on the very first publish there is no previous release, so a failed check leaves the new one in place; read the error, fix it, publish again). Because that failed release stays live, fix it before announcing the site. `--config <path>` uses another config file.
 
 Afterwards:
 
