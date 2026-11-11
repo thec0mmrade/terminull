@@ -29,6 +29,13 @@ entries are grouped by date. The format follows
 - **Dependencies:** cleared all 26 `npm audit` advisories and all known
   advisories reachable in the Go modules (see Changed).
 
+### Fixed
+
+- IBM Plex Mono now loads. Both files in `public/fonts/` were saved HTML pages
+  rather than fonts, so the site and the print zine fell back to a system
+  monospace font. Replaced with the real woff2 files from `@ibm/plex-mono`
+  2.5.0 (SIL Open Font License, included alongside).
+
 ### Changed
 
 - **Astro 5 → 7** (`astro` 7.4.1, `@astrojs/mdx` 8.1.0). Content collections
