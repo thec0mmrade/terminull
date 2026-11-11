@@ -31,3 +31,8 @@ rhysida-iocs.md
 
 # zine content (local only; _templates stays tracked)
 src/content/issues/vol*/
+
+# local notes
+ASCII-ANSI-ART.md
+docs/LANGUAGES.md
+docs/SSH-CONNECTION.md
