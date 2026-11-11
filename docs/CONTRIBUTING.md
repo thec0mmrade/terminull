@@ -377,6 +377,10 @@ For reusable art, add files to `public/art/` and reference them via the
 6. **Submit a PR** with your article. Keep `draft: true` until review is
    complete.
 
+   `.mdx` files can import modules and run JavaScript at build time, so an
+   `.mdx` submission is reviewed as code, not just as prose. Use `.md` unless
+   you need a video or audio embed.
+
 7. **Publication** -- once approved, `draft` is set to `false` and the article
    goes live on the next deploy.
 

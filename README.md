@@ -118,6 +118,7 @@ Configuration via environment variables or flags:
 | `TERMINULL_CONTENT_DIR` | `--content-dir` | ../src/content |
 | `TERMINULL_SITE_URL` | `--site-url` | https://terminull.local |
 | `TERMINULL_HOST_KEY` | `--host-key` | ./ssh_host_ed25519_key |
+| `TERMINULL_MAX_SESSIONS` | `--max-sessions` | 100 |
 
 The host key is auto-generated on first run.
 

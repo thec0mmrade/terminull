@@ -26,3 +26,27 @@ type ReplaceMsg struct {
 	Volume  int
 	Article int
 }
+
+// Terminal size limits. Client-supplied dimensions (initial PTY request and
+// every later window-change) are clamped to these before any rendering.
+const (
+	MinWidth  = 40
+	MaxWidth  = 300
+	MinHeight = 10
+	MaxHeight = 100
+)
+
+// ClampSize clamps terminal dimensions to the supported range.
+func ClampSize(w, h int) (int, int) {
+	return clampInt(w, MinWidth, MaxWidth), clampInt(h, MinHeight, MaxHeight)
+}
+
+func clampInt(v, lo, hi int) int {
+	if v < lo {
+		return lo
+	}
+	if v > hi {
+		return hi
+	}
+	return v
+}

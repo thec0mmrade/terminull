@@ -24,6 +24,8 @@ type ArticleScreen struct {
 	width      int
 	height     int
 	siteURL    string
+	// renderedWidth is the content width of the last Glamour render.
+	renderedWidth int
 }
 
 func NewArticleScreen(store *content.Store, volNum, articleIdx, width, height int, siteURL string) *ArticleScreen {
@@ -79,7 +81,11 @@ func (a *ArticleScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.height = msg.Height
 		a.viewport.Width = a.contentWidth()
 		a.viewport.Height = a.viewportHeight()
-		a.renderContent()
+		// Re-rendering markdown is expensive; only do it when the
+		// wrap width actually changed.
+		if a.contentWidth() != a.renderedWidth {
+			a.renderContent()
+		}
 		return a, nil
 
 	case tea.KeyMsg:
@@ -123,6 +129,7 @@ func (a *ArticleScreen) contentWidth() int {
 }
 
 func (a *ArticleScreen) renderContent() {
+	a.renderedWidth = a.contentWidth()
 	if a.article == nil {
 		a.viewport.SetContent("Article not found.")
 		return

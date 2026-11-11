@@ -59,8 +59,17 @@
     function doSearch(query: string) {
       if (!searchIndex || !results) return;
       const q = query.toLowerCase().trim();
+      // Results are built as DOM nodes with textContent, never innerHTML:
+      // the query and the index fields are untrusted text.
+      const showEmpty = (msg: string) => {
+        const div = document.createElement('div');
+        div.className = 'search-empty';
+        div.textContent = msg;
+        results.replaceChildren(div);
+      };
+
       if (!q) {
-        results.innerHTML = '<div class="search-empty">Type to search...</div>';
+        showEmpty('Type to search...');
         return;
       }
 
@@ -74,17 +83,28 @@
       );
 
       if (matches.length === 0) {
-        results.innerHTML = `<div class="search-empty">No results for "${q}"</div>`;
+        showEmpty(`No results for "${q}"`);
         return;
       }
 
-      results.innerHTML = matches.map((m: any) =>
-        `<a href="/vol/${m.volume}/${m.slug}" class="search-result">
-          <span class="search-result__num">[${String(m.order).padStart(2, '0')}]</span>
-          <span class="search-result__title">${m.title}</span>
-          <span class="search-result__cat">[${m.category}]</span>
-        </a>`
-      ).join('');
+      const span = (cls: string, text: string) => {
+        const el = document.createElement('span');
+        el.className = cls;
+        el.textContent = text;
+        return el;
+      };
+
+      results.replaceChildren(...matches.map((m: any) => {
+        const a = document.createElement('a');
+        a.className = 'search-result';
+        a.href = `/vol/${encodeURIComponent(m.volume)}/${encodeURIComponent(m.slug)}`;
+        a.append(
+          span('search-result__num', `[${String(m.order).padStart(2, '0')}]`),
+          span('search-result__title', m.title),
+          span('search-result__cat', `[${m.category}]`),
+        );
+        return a;
+      }));
     }
 
     input.addEventListener('input', () => doSearch(input.value));

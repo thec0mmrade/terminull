@@ -154,10 +154,12 @@ function renderArticleHtml(markdown) {
   const marked = new Marked();
 
   const renderer = {
-    link({ href, text }) {
+    link({ href, tokens }) {
       linkCounter++;
       links.push({ num: linkCounter, url: href });
-      return `${text}<sup class="fn-ref">[${linkCounter}]</sup>`;
+      // Render the label through the parser so its text is escaped.
+      const label = this.parser.parseInline(tokens);
+      return `${label}<sup class="fn-ref">[${linkCounter}]</sup>`;
     },
     code({ text, lang }) {
       const escaped = escapeHtml(text);
@@ -828,12 +830,30 @@ function buildBackCover(volumeNum) {
 // ---------------------------------------------------------------------------
 
 async function generatePdf(html, outputPath) {
+  // Chromium's sandbox stays on unless ZINE_NO_SANDBOX=1 (needed in some
+  // containers and CI runners).
+  const noSandbox = process.env.ZINE_NO_SANDBOX === '1';
   const browser = await puppeteer.launch({
     headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    args: noSandbox ? ['--no-sandbox', '--disable-setuid-sandbox'] : [],
   });
 
   const page = await browser.newPage();
+
+  // Article markdown may contain raw HTML. Nothing in the zine needs
+  // scripts, and the only network resources it needs are images.
+  await page.setJavaScriptEnabled(false);
+  await page.setRequestInterception(true);
+  page.on('request', (req) => {
+    const url = req.url();
+    const allowed =
+      url.startsWith('data:') ||
+      url === 'about:blank' ||
+      (req.resourceType() === 'image' && /^https?:\/\//.test(url));
+    if (allowed) req.continue();
+    else req.abort();
+  });
+
   await page.setContent(html, { waitUntil: 'networkidle0' });
 
   await page.pdf({

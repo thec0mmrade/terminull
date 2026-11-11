@@ -69,8 +69,16 @@ function wrap(open: string, close: string = RESET): (text: string) => string {
   return (text: string) => `${open}${text}${close}`;
 }
 
+/**
+ * Remove C0 control characters and DEL (keeping newline and tab). The output
+ * is piped to terminals, so escape sequences in the source must not survive.
+ */
+function stripControl(text: string): string {
+  return text.replace(/[\x00-\x08\x0b-\x1f\x7f]/g, '');
+}
+
 export function renderMarkdownToAnsi(markdown: string): string {
-  const processed = preprocessAdmonitions(markdown);
+  const processed = preprocessAdmonitions(stripControl(markdown));
 
   const marked = new Marked();
   marked.use(

@@ -58,6 +58,9 @@ func (a *AppModel) Init() tea.Cmd {
 func (a *AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
+		// Window-change requests are client-controlled; clamp before
+		// anything sizes a buffer from them.
+		msg.Width, msg.Height = types.ClampSize(msg.Width, msg.Height)
 		a.width = msg.Width
 		a.height = msg.Height
 		// Propagate to all screens

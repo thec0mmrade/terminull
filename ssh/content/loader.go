@@ -188,18 +188,18 @@ func loadArticlesFromDir(dir string, defaultVolume int, baseDir string) []Articl
 		}
 
 		articles = append(articles, Article{
-			Title:       meta.Title,
-			Author:      meta.Author,
-			Handle:      meta.Handle,
-			Description: meta.Description,
+			Title:       stripControl(meta.Title),
+			Author:      stripControl(meta.Author),
+			Handle:      stripControl(meta.Handle),
+			Description: stripControl(meta.Description),
 			Date:        date,
 			Volume:      vol,
 			Order:       meta.Order,
-			Category:    meta.Category,
-			Tags:        meta.Tags,
+			Category:    stripControl(meta.Category),
+			Tags:        stripControlAll(meta.Tags),
 			Draft:       meta.Draft,
 			Slug:        slug,
-			Body:        body,
+			Body:        stripControl(body),
 		})
 	}
 
@@ -241,14 +241,36 @@ func loadPages(dir string, baseDir string) []Page {
 		slug := strings.TrimSuffix(name, filepath.Ext(name))
 
 		pages = append(pages, Page{
-			Title:       meta.Title,
-			Description: meta.Description,
+			Title:       stripControl(meta.Title),
+			Description: stripControl(meta.Description),
 			Slug:        slug,
-			Body:        body,
+			Body:        stripControl(body),
 		})
 	}
 
 	return pages
+}
+
+// stripControl removes C0 control characters and DEL, keeping newline and
+// tab. Content is sent straight to client terminals, so escape sequences in
+// a markdown file or a YAML string must not survive loading.
+func stripControl(s string) string {
+	return strings.Map(func(r rune) rune {
+		if r == '\n' || r == '\t' {
+			return r
+		}
+		if r < 0x20 || r == 0x7f {
+			return -1
+		}
+		return r
+	}, s)
+}
+
+func stripControlAll(ss []string) []string {
+	for i, s := range ss {
+		ss[i] = stripControl(s)
+	}
+	return ss
 }
 
 // splitFrontmatter splits a markdown file at the --- fences.

@@ -317,8 +317,10 @@ has a significantly larger attack surface than the static site.
 |---------------------|----------------------------------------------------------------|
 | Connection flood    | `wish/ratelimiter` middleware: 1 conn/sec sustained, burst 10, 256-IP LRU. Exceeding the limit rejects the connection. |
 | Username abuse      | Middleware rejects usernames >64 bytes before the TUI starts. Display names sanitized: ANSI escapes stripped, non-printable chars removed, truncated to 32 chars. |
-| PTY size abuse      | Client-supplied dimensions clamped: width ∈ [40, 300], height ∈ [10, 100]. Prevents excessive memory allocation in rendering. |
-| Session exhaustion  | Idle timeout: 10 minutes. Max session: 2 hours (`WithIdleTimeout`, `WithMaxTimeout`). |
+| PTY size abuse      | Client-supplied dimensions clamped to width ∈ [40, 300], height ∈ [10, 100], both at session start and on every later window-change (`types.ClampSize`). Markdown is re-rendered only when the wrap width changes, so a resize flood stays cheap. |
+| Session exhaustion  | Idle timeout: 10 minutes. Max session: 2 hours (`WithIdleTimeout`, `WithMaxTimeout`). Concurrent sessions capped at 100 (`--max-sessions` / `TERMINULL_MAX_SESSIONS`); extra connections get "server full". |
+| Log injection       | Connection logs write the username, TERM and client version with `%q`, so control characters and newlines are escaped and each event stays on one line. |
+| Terminal escapes in content | The content loader strips C0 control characters (except newline and tab) from article bodies and frontmatter before they reach client terminals. The `.txt` endpoints do the same for article bodies. |
 | Stack exhaustion    | Screen navigation stack capped at 20. At max depth, new screens replace the top instead of pushing. |
 | Content dir escape  | Symlinks resolved via `filepath.EvalSymlinks`; files resolving outside the content directory are rejected. |
 | Large file OOM      | Files >1MB skipped by the content loader (`maxFileSize = 1 << 20`). |
@@ -348,10 +350,21 @@ WorkingDirectory=/opt/terminull/ssh
 ExecStart=/opt/terminull/ssh/terminull-ssh --port 2222 --content-dir /opt/terminull/src/content
 Restart=on-failure
 RestartSec=5
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/terminull/ssh
+MemoryMax=512M
 
 [Install]
 WantedBy=multi-user.target
 ```
+
+`ReadWritePaths` covers the host key, which is generated in the working
+directory on first run. `MemoryMax` bounds the damage of any memory-exhaustion
+bug: systemd restarts the service instead of the host swapping.
 
 **Docker**:
 

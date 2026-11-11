@@ -19,6 +19,8 @@ type PageScreen struct {
 	width    int
 	height   int
 	ready    bool
+	// renderedWidth is the content width of the last Glamour render.
+	renderedWidth int
 }
 
 func NewPageScreen(store *content.Store, slug string, width, height int) *PageScreen {
@@ -64,7 +66,11 @@ func (p *PageScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		p.height = msg.Height
 		p.viewport.Width = p.contentWidth()
 		p.viewport.Height = p.viewportHeight()
-		p.renderContent()
+		// Re-rendering markdown is expensive; only do it when the
+		// wrap width actually changed.
+		if p.contentWidth() != p.renderedWidth {
+			p.renderContent()
+		}
 		return p, nil
 
 	case tea.KeyMsg:
@@ -98,6 +104,7 @@ func (p *PageScreen) contentWidth() int {
 }
 
 func (p *PageScreen) renderContent() {
+	p.renderedWidth = p.contentWidth()
 	if p.page == nil {
 		p.viewport.SetContent("Page not found.")
 		return

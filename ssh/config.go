@@ -13,6 +13,7 @@ type Config struct {
 	ContentDir  string
 	SiteURL     string
 	HostKeyPath string
+	MaxSessions int
 }
 
 // LoadConfig reads env vars with flag overrides.
@@ -23,6 +24,7 @@ func LoadConfig() Config {
 		ContentDir:  envOr("TERMINULL_CONTENT_DIR", "../src/content"),
 		SiteURL:     envOr("TERMINULL_SITE_URL", "https://terminull.local"),
 		HostKeyPath: envOr("TERMINULL_HOST_KEY", "./ssh_host_ed25519_key"),
+		MaxSessions: envInt("TERMINULL_MAX_SESSIONS", 100),
 	}
 
 	flag.StringVar(&cfg.Host, "host", cfg.Host, "bind host")
@@ -30,7 +32,12 @@ func LoadConfig() Config {
 	flag.StringVar(&cfg.ContentDir, "content-dir", cfg.ContentDir, "path to content directory")
 	flag.StringVar(&cfg.SiteURL, "site-url", cfg.SiteURL, "public site URL")
 	flag.StringVar(&cfg.HostKeyPath, "host-key", cfg.HostKeyPath, "SSH host key path")
+	flag.IntVar(&cfg.MaxSessions, "max-sessions", cfg.MaxSessions, "maximum concurrent sessions")
 	flag.Parse()
+
+	if cfg.MaxSessions < 1 {
+		cfg.MaxSessions = 100
+	}
 
 	return cfg
 }

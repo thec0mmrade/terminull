@@ -51,11 +51,20 @@ Outputs two PDFs to `dist/zine/`: a reader version (5.5"×8.5" portrait) and a
 booklet imposition (11"×8.5" landscape, 2-up saddle-stitch spreads). Requires
 `puppeteer` and `pdf-lib` (dev dependencies, installed via `npm install`).
 
+The exporter renders articles with JavaScript disabled, blocks every network
+request except images, and runs Chromium with its sandbox on. If Chromium
+cannot start its sandbox (some containers and CI runners), set
+`ZINE_NO_SANDBOX=1`.
+
 Puppeteer 25 downloads its own Chrome and needs `unzip` on your PATH to extract
 it (`npx puppeteer browsers install chrome` retries the download). On NixOS the
 downloaded Chrome cannot find system libraries such as `libglib-2.0.so.0`, so
-the export fails unless Chrome is run from an FHS environment or Puppeteer is
-pointed at a system browser with `PUPPETEER_EXECUTABLE_PATH`.
+the export fails unless Puppeteer is pointed at a system browser. This works:
+
+```bash
+nix shell nixpkgs#chromium -c env -u LD_LIBRARY_PATH sh -c \
+  'PUPPETEER_EXECUTABLE_PATH=$(which chromium) npm run zine'
+```
 
 ---
 

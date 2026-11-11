@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"regexp"
 	"strings"
+	"sync/atomic"
 	"syscall"
 	"time"
 	"unicode"
@@ -18,13 +19,13 @@ import (
 	"github.com/charmbracelet/wish"
 	"github.com/charmbracelet/wish/activeterm"
 	"github.com/charmbracelet/wish/bubbletea"
-	"github.com/charmbracelet/wish/logging"
 	"github.com/charmbracelet/wish/ratelimiter"
 	"github.com/muesli/termenv"
 	"golang.org/x/time/rate"
 
 	"terminull-ssh/content"
 	"terminull-ssh/ui"
+	"terminull-ssh/ui/types"
 )
 
 // ansiEscapeRe matches ANSI escape sequences.
@@ -41,8 +42,8 @@ func sanitizeUsername(s string) string {
 		}
 	}
 	s = strings.TrimSpace(b.String())
-	if len(s) > 32 {
-		s = s[:32]
+	if r := []rune(s); len(r) > 32 {
+		s = strings.TrimSpace(string(r[:32]))
 	}
 	if s == "" {
 		return "guest"
@@ -58,6 +59,7 @@ func usernameGuard() wish.Middleware {
 	return func(next ssh.Handler) ssh.Handler {
 		return func(sess ssh.Session) {
 			if len(sess.User()) > maxUsernameLen {
+				log.Printf("rejecting %d-byte username from %s", len(sess.User()), sess.RemoteAddr())
 				fmt.Fprintf(sess, "username too long (max %d bytes)\r\n", maxUsernameLen)
 				return
 			}
@@ -66,15 +68,41 @@ func usernameGuard() wish.Middleware {
 	}
 }
 
-// clamp returns v clamped to [lo, hi].
-func clamp(v, lo, hi int) int {
-	if v < lo {
-		return lo
+// connLog logs connects and disconnects. Username, TERM and client version
+// are client-controlled, so they are written with %q: control characters and
+// newlines are escaped and each event stays on one line.
+func connLog() wish.Middleware {
+	return func(next ssh.Handler) ssh.Handler {
+		return func(sess ssh.Session) {
+			start := time.Now()
+			pty, _, _ := sess.Pty()
+			log.Printf("connect user=%q remote=%s term=%q size=%dx%d client=%q",
+				sess.User(), sess.RemoteAddr(), pty.Term,
+				pty.Window.Width, pty.Window.Height, sess.Context().ClientVersion())
+			next(sess)
+			log.Printf("disconnect remote=%s duration=%s",
+				sess.RemoteAddr(), time.Since(start).Round(time.Millisecond))
+		}
 	}
-	if v > hi {
-		return hi
+}
+
+// sessionLimit caps the number of concurrent sessions. The rate limiter is
+// per-IP, so without this a distributed client could hold sessions open
+// until the server runs out of memory.
+func sessionLimit(max int) wish.Middleware {
+	var active atomic.Int64
+	return func(next ssh.Handler) ssh.Handler {
+		return func(sess ssh.Session) {
+			if active.Add(1) > int64(max) {
+				active.Add(-1)
+				log.Printf("session limit (%d) reached, rejecting %s", max, sess.RemoteAddr())
+				fmt.Fprint(sess, "server full, try again later\r\n")
+				return
+			}
+			defer active.Add(-1)
+			next(sess)
+		}
 	}
-	return v
 }
 
 func main() {
@@ -108,15 +136,17 @@ func main() {
 				if h == 0 {
 					h = 24
 				}
-				w = clamp(w, 40, 300)
-				h = clamp(h, 10, 100)
+				w, h = types.ClampSize(w, h)
 				username := sanitizeUsername(sess.User())
 				model := ui.NewApp(store, w, h, username, cfg.SiteURL)
 				return model, []tea.ProgramOption{tea.WithAltScreen()}
 			}),
-			usernameGuard(),
 			activeterm.Middleware(),
-			logging.Middleware(),
+			connLog(),
+			// Middleware listed later runs earlier: rate limit, then
+			// session cap, then the username guard, then logging.
+			usernameGuard(),
+			sessionLimit(cfg.MaxSessions),
 			ratelimiter.Middleware(limiter),
 		),
 	)
