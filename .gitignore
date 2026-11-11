@@ -39,3 +39,6 @@ docs/SSH-CONNECTION.md
 
 # generated zine PDFs (copied into dist/ by astro build)
 public/zine/
+
+# deploy settings (local only)
+deploy.env
