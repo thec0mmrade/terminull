@@ -8,6 +8,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "zine": "node scripts/export-zine.js",
+    "publish": "node scripts/publish.js",
     "test": "node --test"
   },
   "devDependencies": {
