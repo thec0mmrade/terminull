@@ -40,11 +40,11 @@ test('releaseName is UTC timestamp plus 7-char commit', () => {
 
 test('releaseText lists the release metadata', () => {
   const text = releaseText({
-    name: 'n1', contentCommit: 'c'.repeat(40), engineCommit: 'e'.repeat(40), engineDirty: true,
+    name: 'n1', engineVersion: '1.2.3', contentCommit: 'c'.repeat(40), engineCommit: 'e'.repeat(40), engineDirty: true,
     date: new Date('2026-11-11T09:05:03Z'), siteUrl: 'https://x.example',
   });
   assert.equal(text, [
-    'release: n1', `content_commit: ${'c'.repeat(40)}`, `engine_commit: ${'e'.repeat(40)}`,
+    'release: n1', 'engine_version: 1.2.3', `content_commit: ${'c'.repeat(40)}`, `engine_commit: ${'e'.repeat(40)}`,
     'engine_dirty: yes', 'built_at: 2026-11-11T09:05:03.000Z', 'site_url: https://x.example', '',
   ].join('\n'));
 });

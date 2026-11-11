@@ -262,8 +262,17 @@ that host to `frame-src` or `script-src`.
 
 ### No Built-In Analytics
 
-By design, terminull has no analytics, no error tracking, and no third-party
-monitoring. The footer says "no tracking" and means it.
+By design, terminull has no analytics, no cookies, no error tracking and no
+third-party monitoring, and Caddy keeps no access log. The footer says "no
+analytics" rather than "no tracking" because two things do leave a trace:
+
+- **The SSH BBS logs every connection** to the server's journal: the
+  visitor's IP address, the SSH username their client sent, and their
+  terminal type (`journalctl -u terminull-bbs`). journald keeps it until it
+  rotates out.
+- **Embedded media** (an image hosted elsewhere, a YouTube video) is fetched
+  from that other site, which sees the reader's IP address. The site sends
+  `Referrer-Policy: no-referrer`, so it doesn't learn which page linked it.
 
 ### Verify the Site Is Live
 

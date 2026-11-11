@@ -359,6 +359,40 @@ workflow assume the server.
 
 ---
 
+## Releasing
+
+The engine is versioned with [SemVer](https://semver.org/). The version lives
+in one place, `package.json`; the web and `.txt` footers, the print zine and
+the server's `RELEASE` file read it from `src/lib/version.js`, and publish
+stamps it into the SSH BBS binary (`-ldflags -X
+terminull-ssh/ui/components.Version=…`). A plain `go build` shows
+`terminull dev`.
+
+Versions describe the engine, not the zine: publishing a new volume or article
+changes nothing here. Bump:
+
+- **MAJOR** when a forker has to act: a frontmatter field, `deploy.env` key,
+  playbook variable or server layout changes incompatibly.
+- **MINOR** for new features (a new screen, endpoint, content type, option).
+- **PATCH** for fixes that change no interface.
+
+To cut a release, say 1.1.0:
+
+1. In `CHANGELOG.md`, move the entries under `## [Unreleased]` into a new
+   `## [1.1.0] - YYYY-MM-DD` section, leaving `## [Unreleased]` empty above it.
+   Commit that.
+2. `npm version minor -m "Release %s"` (or `patch` / `major`). It sets
+   `package.json` and `package-lock.json`, commits, and tags `v1.1.0`. It
+   refuses to run with uncommitted changes.
+3. `npm test` (fails if the changelog has no section for the new version),
+   then `git push --follow-tags`.
+4. Publish, so the site and the BBS show the new version.
+
+Between releases, note every user-visible change under `## [Unreleased]` as
+you make it.
+
+---
+
 ## Extending the Platform
 
 ### Adding Remark/Rehype Plugins

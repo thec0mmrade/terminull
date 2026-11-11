@@ -1,12 +1,26 @@
 # Changelog
 
-Notable changes to terminull. The project has no tagged releases yet, so
-entries are grouped by date. The format follows
-[Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+Notable changes to terminull. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html): each release is a
+git tag `vX.Y.Z`, and the version in `package.json` is what the site, the
+`.txt` endpoints, the print zine and the SSH BBS show. Changes from before
+1.0.0 were not versioned and are grouped by date. How to cut a release:
+[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#releasing).
 
-## 2026-11-11
+## [Unreleased]
+
+## [1.0.0] - 2026-11-11
+
+The first versioned release.
 
 ### Added
+
+- **Version tracking.** `package.json` holds the version (SemVer). The web
+  and `.txt` footers, the print zine's back cover and the SSH BBS footer all
+  show it (the BBS gets it stamped in when publish builds it), and each
+  release's `RELEASE` file on the server records it as `engine_version`.
+  `npm test` fails if the version has no section in this changelog.
 
 - **Security headers.** Caddy now sends HSTS, a Content-Security-Policy
   (scripts only from the site itself; frames only from YouTube),
@@ -55,6 +69,13 @@ entries are grouped by date. The format follows
 
 ### Changed
 
+- The footers say **"no analytics"** instead of "no tracking", on the
+  website, the `.txt` endpoints, the print zine, the SSH BBS and the
+  manifesto. There are no analytics, cookies or third-party scripts, but the
+  SSH BBS logs each connection and an article may embed images or video from
+  other sites, so "no tracking" overclaimed. The homepage footnote now lists
+  every JavaScript enhancement (keyboard nav, command prompt, search, ANSI art
+  draw-in).
 - Astro now emits every script as a file under `/_astro/` instead of inlining
   small ones (`vite.build.assetsInlineLimit: 0`), so the CSP can forbid inline
   scripts.

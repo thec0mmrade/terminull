@@ -31,11 +31,12 @@ export function releaseName(date, contentCommit) {
 
 /**
  * Contents of the RELEASE file: plain `key: value` lines.
- * @param {{name: string, contentCommit: string, engineCommit: string, engineDirty: boolean, date: Date, siteUrl: string}} r
+ * @param {{name: string, engineVersion: string, contentCommit: string, engineCommit: string, engineDirty: boolean, date: Date, siteUrl: string}} r
  */
 export function releaseText(r) {
   return [
     `release: ${r.name}`,
+    `engine_version: ${r.engineVersion}`,
     `content_commit: ${r.contentCommit}`,
     `engine_commit: ${r.engineCommit}`,
     `engine_dirty: ${r.engineDirty ? 'yes' : 'no'}`,

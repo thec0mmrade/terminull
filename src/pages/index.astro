@@ -9,6 +9,7 @@ const menuItems = [
   { label: 'Manifesto', href: '/manifesto', description: 'What we believe' },
   { label: 'Help', href: '/help', description: 'Commands & navigation' },
 ];
+import { versionLabel } from '../lib/version.js';
 ---
 
 <BaseLayout title="terminull" description="terminull - hacker e-zine. A return to the underground." page="HOME">
@@ -30,8 +31,8 @@ const menuItems = [
   <div class="terminal-divider" aria-hidden="true">{'─'.repeat(76)}</div>
 
   <footer class="terminal-footer">
-    <p>terminull v1.0 // no tracking // no ads // no javascript required*</p>
-    <p class="terminal-footer__note">*keyboard nav & command prompt are progressive enhancements</p>
+    <p>{versionLabel} // no analytics // no ads // no javascript required*</p>
+    <p class="terminal-footer__note">*keyboard nav, command prompt, search and the ANSI art draw-in are progressive enhancements</p>
   </footer>
 </BaseLayout>
 

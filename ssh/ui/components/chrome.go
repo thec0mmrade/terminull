@@ -23,11 +23,24 @@ func RenderConnectionLine(text string, bright bool) string {
 	return lipgloss.NewStyle().Foreground(color).Render(text)
 }
 
+// Version is the engine version, stamped in by publish with
+// -ldflags "-X terminull-ssh/ui/components.Version=1.2.3" (from package.json).
+// A plain `go build` leaves it as "dev".
+var Version = "dev"
+
+// VersionLabel is "terminull v1.2.3", or "terminull dev" for a local build.
+func VersionLabel() string {
+	if Version == "dev" {
+		return "terminull dev"
+	}
+	return "terminull v" + Version
+}
+
 // RenderFooter returns the footer text.
 func RenderFooter(width int) string {
 	divider := RenderDivider(width)
 	line1 := lipgloss.NewStyle().Foreground(theme.Muted).
-		Render("terminull v1.0 // no tracking // no ads // just text")
+		Render(VersionLabel() + " // no analytics // no ads // just text")
 	line2 := lipgloss.NewStyle().Foreground(theme.Muted).
 		Render("Ctrl+C to disconnect")
 	return divider + "\n" + line1 + "\n" + line2

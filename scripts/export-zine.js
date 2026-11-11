@@ -14,6 +14,7 @@ import { fileURLToPath } from 'node:url';
 import { Marked } from 'marked';
 import { volumesDir } from '../src/lib/paths.js';
 import { siteUrl } from '../src/lib/site-url.js';
+import { versionLabel } from '../src/lib/version.js';
 import puppeteer from 'puppeteer';
 import { PDFDocument } from 'pdf-lib';
 import {
@@ -938,7 +939,7 @@ function buildBackCover(volumeNum) {
   <div class="page back-cover">
     <div class="back-cover-title">terminull</div>
     <div class="back-cover-meta">Volume ${volumeNum} &mdash; ${dateStr}</div>
-    <div class="back-cover-meta">no tracking // no ads // just text</div>
+    <div class="back-cover-meta">${versionLabel} // no analytics // no ads // just text</div>
     ${process.env.TERMINULL_SITE_URL ? `<div class="back-cover-url">${escapeHtml(siteUrl())}</div>` : ''}
   </div>
   `;

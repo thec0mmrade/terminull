@@ -218,13 +218,17 @@ volume's `href` and `description`.
 
 Update the MOTD text for new volumes, announcements, or seasonal messages.
 
-### Footer (line 34)
+### Footer
 
-```html
-<p>terminull v1.0 // no tracking // no ads // no javascript required*</p>
+```astro
+<p>{versionLabel} // no analytics // no ads // no javascript required*</p>
 ```
 
-Update the version string when appropriate.
+`versionLabel` ("terminull v1.0.0") comes from `package.json`; don't edit the
+version here (see [Releasing](./DEVELOPMENT.md#releasing)). If you change the
+claims, change them everywhere they appear: this footer, the `.txt` footer
+(`src/lib/ansi-text.ts`), the SSH BBS footer (`ssh/ui/components/chrome.go`),
+the print zine's back cover (`scripts/export-zine.js`) and the manifesto.
 
 ---
 

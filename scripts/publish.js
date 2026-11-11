@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawn, execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { version } from '../src/lib/version.js';
 import { loadDeployConfig } from './publish/config.js';
 import { checkContentRepo, checkConfigUntracked } from './publish/preflight.js';
 import {
@@ -62,7 +63,7 @@ function volumeNumbers(volumesDir) {
  * Build everything into stageDir. Stops at the first failing command.
  * @param {import('./publish/config.js').DeployConfig} cfg
  * @param {string} stageDir
- * @param {{name: string, contentCommit: string, engineCommit: string, engineDirty: boolean, date: Date, siteUrl: string}} meta
+ * @param {{name: string, engineVersion: string, contentCommit: string, engineCommit: string, engineDirty: boolean, date: Date, siteUrl: string}} meta
  *   written to RELEASE.pending in the stage; it is never uploaded (finalizeCommand writes RELEASE last)
  */
 export async function buildRelease(cfg, stageDir, meta) {
@@ -89,7 +90,8 @@ export async function buildRelease(cfg, stageDir, meta) {
   }
 
   fs.mkdirSync(path.join(stageDir, 'bin'), { recursive: true });
-  await runStreaming('go', ['build', '-trimpath', '-o', path.join(stageDir, 'bin/terminull-ssh'), '.'], {
+  const ldflags = `-X terminull-ssh/ui/components.Version=${version}`;
+  await runStreaming('go', ['build', '-trimpath', '-ldflags', ldflags, '-o', path.join(stageDir, 'bin/terminull-ssh'), '.'], {
     cwd: path.join(ROOT, 'ssh'),
     env: { ...env, CGO_ENABLED: '0', GOOS: 'linux', GOARCH: cfg.arch },
   });
@@ -299,7 +301,7 @@ async function main() {
 
   const date = new Date();
   const name = releaseName(date, commit);
-  const meta = { name, contentCommit: commit, engineCommit, engineDirty, date, siteUrl: cfg.siteUrl };
+  const meta = { name, engineVersion: version, contentCommit: commit, engineCommit, engineDirty, date, siteUrl: cfg.siteUrl };
 
   step(4, 'Building site, zines and BBS binary…');
   const stageDir = fs.mkdtempSync(path.join(os.tmpdir(), 'terminull-stage-'));

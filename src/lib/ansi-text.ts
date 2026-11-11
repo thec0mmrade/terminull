@@ -1,3 +1,4 @@
+import { versionLabel } from './version.js';
 import { Marked } from 'marked';
 import { markedTerminal } from 'marked-terminal';
 import fs from 'node:fs';
@@ -260,7 +261,7 @@ export function buildArticleNav(opts: {
 export function buildFooter(site: string): string {
   return [
     HR,
-    `${C.muted}terminull v1.0 // no tracking // no ads // just text${C.reset}`,
+    `${C.muted}${versionLabel} // no analytics // no ads // just text${C.reset}`,
     `${C.muted}${site}${C.reset}`,
     '',
   ].join('\n');
