@@ -115,7 +115,7 @@ func main() {
 	cfg := LoadConfig()
 
 	// Load content at startup
-	store := content.LoadStore(cfg.ContentDir)
+	store := content.LoadStore(cfg.ContentDir, cfg.VolumesDir)
 
 	// Rate limiter: 1 conn/sec sustained, burst of 10, track up to 256 IPs
 	limiter := ratelimiter.NewRateLimiter(rate.Every(time.Second), 10, 256)

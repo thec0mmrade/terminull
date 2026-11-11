@@ -29,8 +29,8 @@ rhysida-iocs.md
 # jetbrains setting folder
 .idea/
 
-# zine content (local only; _templates stays tracked)
-src/content/issues/vol*/
+# zine content (local only; separate private repo checked out here)
+src/content/volumes/
 
 # local notes
 ASCII-ANSI-ART.md

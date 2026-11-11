@@ -6,17 +6,17 @@ import { glob } from 'astro/loaders';
 import type { Loader } from 'astro/loaders';
 import { z } from 'astro/zod';
 import { ansiMeta, unsupportedReason } from './lib/ansi-art.js';
+import { volumesDir } from './lib/paths.js';
 
-const ISSUES_BASE = './src/content/issues';
 
 /**
  * Loads a volume's articles: markdown files, plus ANSI art. Dropping a
  * `{order}-{slug}.ans` file into a vol{N}/ directory publishes it as an
  * article whose title, artist and date come from the file's SAUCE record.
- * Only vol{N}/ directories are published; _templates/ is excluded.
+ * Only vol{N}/ directories of the volumes dir (TERMINULL_VOLUMES_DIR) are published.
  */
 function issuesLoader(): Loader {
-  const markdown = glob({ pattern: 'vol*/*.{md,mdx}', base: ISSUES_BASE });
+  const markdown = glob({ pattern: 'vol*/*.{md,mdx}', base: volumesDir() });
   let artIds = new Set<string>();
 
   return {
@@ -25,7 +25,7 @@ function issuesLoader(): Loader {
       await markdown.load(ctx);
 
       const root = fileURLToPath(ctx.config.root);
-      const base = path.resolve(root, ISSUES_BASE);
+      const base = volumesDir();
 
       const syncArt = async () => {
         const seen = new Set<string>();

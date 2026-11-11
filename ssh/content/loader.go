@@ -70,8 +70,10 @@ func safeReadFile(path, baseDir string) ([]byte, error) {
 	return os.ReadFile(path)
 }
 
-// LoadStore scans contentDir for issues and pages, returns a populated Store.
-func LoadStore(contentDir string) *Store {
+// LoadStore loads volumes from volumesDir/vol*/ and pages from
+// contentDir/pages, returning a populated Store. volumesDir may lie outside
+// contentDir; articles are contained within volumesDir.
+func LoadStore(contentDir, volumesDir string) *Store {
 	store := &Store{}
 
 	// Resolve the content directory to an absolute path for symlink checks
@@ -81,13 +83,20 @@ func LoadStore(contentDir string) *Store {
 		return store
 	}
 
-	// Load issues
-	issuesDir := filepath.Join(absContentDir, "issues")
+	// Load volumes
+	absVolumesDir, err := filepath.Abs(volumesDir)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "warn: cannot resolve volumes dir %s: %v\n", volumesDir, err)
+		absVolumesDir = ""
+	}
+	issuesDir := absVolumesDir
 	volumeMap := make(map[int][]Article)
 
 	entries, err := os.ReadDir(issuesDir)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "warn: cannot read issues dir %s: %v\n", issuesDir, err)
+	if absVolumesDir == "" {
+		// unresolvable; nothing to load
+	} else if err != nil {
+		fmt.Fprintf(os.Stderr, "warn: cannot read volumes dir %s: %v\n", issuesDir, err)
 	} else {
 		for _, entry := range entries {
 			if !entry.IsDir() {
@@ -95,11 +104,11 @@ func LoadStore(contentDir string) *Store {
 			}
 			match := volDirRegex.FindStringSubmatch(entry.Name())
 			if match == nil {
-				continue // skip _templates, etc.
+				continue // skip anything that is not vol{N}
 			}
 			volNum, _ := strconv.Atoi(match[1])
 			volDir := filepath.Join(issuesDir, entry.Name())
-			articles := loadArticlesFromDir(volDir, volNum, absContentDir)
+			articles := loadArticlesFromDir(volDir, volNum, absVolumesDir)
 			for _, a := range articles {
 				if !a.Draft {
 					volumeMap[volNum] = append(volumeMap[volNum], a)

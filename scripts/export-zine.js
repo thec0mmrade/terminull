@@ -12,6 +12,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Marked } from 'marked';
+import { volumesDir } from '../src/lib/paths.js';
 import puppeteer from 'puppeteer';
 import { PDFDocument } from 'pdf-lib';
 import {
@@ -79,7 +80,7 @@ function parseFrontmatter(raw) {
 }
 
 function loadArticles(volumeNum) {
-  const dir = path.join(ROOT, 'src', 'content', 'issues', `vol${volumeNum}`);
+  const dir = path.join(volumesDir(), `vol${volumeNum}`);
   if (!fs.existsSync(dir)) {
     console.error(`Error: Volume directory not found: ${dir}`);
     process.exit(1);
@@ -131,9 +132,9 @@ function loadArticles(volumeNum) {
 }
 
 function findHighestVolume() {
-  const issuesDir = path.join(ROOT, 'src', 'content', 'issues');
+  const issuesDir = volumesDir();
   if (!fs.existsSync(issuesDir)) {
-    console.error('Error: No issues directory found');
+    console.error('Error: No volumes directory found');
     process.exit(1);
   }
   const vols = fs.readdirSync(issuesDir)
