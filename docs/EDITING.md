@@ -239,7 +239,7 @@ adds "Press ? …".
 ### Footer
 
 ```astro
-<p>{versionLabel} // no analytics // no ads // no javascript required*</p>
+<p>{versionLabel} // no analytics // no ads</p>
 ```
 
 `versionLabel` ("terminull v1.0.0") comes from `package.json`; don't edit the

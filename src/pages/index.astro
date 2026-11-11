@@ -30,8 +30,7 @@ const [motdBefore, motdAfter] = MOTD_TEXT.split('terminull');
   <div class="terminal-divider" aria-hidden="true">{'─'.repeat(76)}</div>
 
   <footer class="terminal-footer">
-    <p>{versionLabel} // no analytics // no ads // no javascript required*</p>
-    <p class="terminal-footer__note">*keyboard nav, command prompt, search and the ANSI art draw-in are progressive enhancements</p>
+    <p>{versionLabel} // no analytics // no ads</p>
   </footer>
 </BaseLayout>
 
@@ -72,11 +71,5 @@ const [motdBefore, motdAfter] = MOTD_TEXT.split('terminull');
     color: var(--text-muted);
     font-size: 1.125rem;
     text-align: center;
-  }
-
-  .terminal-footer__note {
-    margin-top: 0.25rem;
-    font-size: 1rem;
-    color: var(--text-muted);
   }
 </style>

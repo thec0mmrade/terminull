@@ -10,6 +10,14 @@ git tag `vX.Y.Z`, and the version in `package.json` is what the site, the
 
 ## [Unreleased]
 
+### Changed
+
+- The homepage footer drops "// no javascript required*" and its footnote; it
+  now reads "terminull vX.Y.Z // no analytics // no ads", like the `.txt`
+  and BBS footers minus their "just text".
+- `docs/EDITING.md` explains where the print zine PDFs are and how to print
+  the booklet.
+
 ## [1.2.0] - 2026-11-11
 
 ### Added
