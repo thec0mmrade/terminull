@@ -133,7 +133,6 @@ The name "terminull" appears in these locations. Update all of them:
 | `src/lib/ansi-text.ts:248` | Footer URL (`terminull.local`) |
 | `src/content/pages/about.md` | Content references to the name |
 | `src/content/pages/manifesto.md` | Content references to the name |
-| `public/robots.txt:4` | Sitemap URL |
 
 ### Logo
 

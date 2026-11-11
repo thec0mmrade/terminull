@@ -24,21 +24,18 @@ The one-time server setup (OS, DNS, Caddy, the BBS systemd unit, firewall, users
 
 The public URL comes from one setting, `TERMINULL_SITE_URL` (in `deploy.env` for publishing, or in the environment for a local build). It is used by:
 
-- Astro's `site`, hence canonical URLs (`src/components/Seo.astro`), Open Graph `og:url` and the sitemap (`/sitemap-index.xml`)
+- Astro's `site`, hence canonical URLs (`src/components/Seo.astro`), Open Graph `og:url`
 - the footer of the `.txt` endpoints
 - the zine back cover
 - the BBS (`--site-url` / `TERMINULL_SITE_URL`)
 
 Without it, a neutral development default is used (`src/lib/site-url.js`). DNS itself is an `A`/`AAAA` record at your DNS provider; see [DEPLOY.md](./DEPLOY.md).
 
-`public/robots.txt` is a static file and still contains a `Sitemap:` line with a fixed URL. Edit it to match your `TERMINULL_SITE_URL`.
-
 ### Changing the Domain
 
 1. Update `TERMINULL_SITE_URL` and `DEPLOY_HOST` in `deploy.env`
-2. Update the `Sitemap:` line in `public/robots.txt`
-3. Update the hostname in the server's `/etc/caddy/Caddyfile` and the DNS record
-4. `npm run publish`
+2. Update the hostname in the server's `/etc/caddy/Caddyfile` and the DNS record
+3. `npm run publish`
 
 ---
 
@@ -160,20 +157,16 @@ search or text endpoints until the cache expires.
 
 ### Sitemap
 
-Astro auto-generates a sitemap at `/sitemap-index.xml`. This is referenced in
-`public/robots.txt:4`. No manual sitemap maintenance needed -- it updates on
-every build.
+No sitemap is generated, and `robots.txt` does not reference one.
 
 ### robots.txt
 
 ```
 User-agent: *
 Allow: /
-
-Sitemap: https://terminull.example.com/sitemap-index.xml
 ```
 
-Allows all crawlers. The sitemap URL must match `TERMINULL_SITE_URL`.
+Allows all crawlers.
 
 ### Not Implemented
 

@@ -71,7 +71,8 @@ systemctl enable --now ssh.service
 systemctl restart ssh
 ```
 
-4. **Keep your current session open.** From a second terminal confirm `ssh -p 2200 admin@203.0.113.10` works and `sudo -v` succeeds. Only then close the first session.
+4. If `ufw` is already active on the image, run `sudo ufw allow 2200/tcp` before restarting sshd.
+5. **Keep your current session open.** From a second terminal confirm `ssh -p 2200 admin@203.0.113.10` works and `sudo -v` succeeds. Only then close the first session.
 
 ## 4. Users and directories
 
@@ -102,7 +103,7 @@ Do not create `/srv/terminull/current` yourself. Publish creates it as a relativ
 sudo apt install -y ufw unattended-upgrades
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
-sudo ufw allow 2200/tcp   # admin ssh (do this BEFORE enabling, and before moving sshd)
+sudo ufw allow 2200/tcp   # admin ssh (before enabling ufw, so you are not locked out)
 sudo ufw allow 22/tcp     # the BBS
 sudo ufw allow 80/tcp     # Caddy (HTTP, certificate challenge and redirect)
 sudo ufw allow 443/tcp    # Caddy (HTTPS)
@@ -211,7 +212,7 @@ nix shell nixpkgs#go nixpkgs#chromium -c env -u LD_LIBRARY_PATH sh -c 'PUPPETEER
 
 (Alternatively set `PUPPETEER_EXECUTABLE_PATH` in `deploy.env` and keep `go` on your PATH.)
 
-It checks the content repo and ssh access, builds (zines for every volume, the site, a static Linux BBS binary), uploads to a new release directory, points `current` at it, restarts the BBS, and verifies HTTPS and the SSH banner. On failure it points `current` back at the previous release and restarts the BBS (on the very first publish there is no previous release, so a failed check leaves the new one in place; read the error, fix it, publish again). `--config <path>` uses another config file.
+It checks the content repo and ssh access, builds (zines for every volume, the site, a static Linux BBS binary), uploads to a new release directory, points `current` at it, restarts the BBS, and verifies HTTPS and the SSH banner. On failure it points `current` back at the previous release and restarts the BBS (on the very first publish there is no previous release, so a failed check leaves the new one in place; read the error, fix it, publish again). Because that failed release stays live, fix it before announcing the site. `--config <path>` uses another config file.
 
 Afterwards:
 
