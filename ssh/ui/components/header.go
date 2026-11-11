@@ -2,6 +2,7 @@ package components
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 	"time"
 
@@ -43,8 +44,19 @@ func RenderTagline(latestVolume int, width int) string {
 	return strings.Repeat(" ", pad) + style.Render(tagline)
 }
 
-// RenderSystemInfo returns the system info box.
-func RenderSystemInfo(username string, width int) string {
+// SiteHost returns the host of the public site URL (with a port if it has
+// one), shown as the BBS node name. It falls back to "terminull.local".
+func SiteHost(siteURL string) string {
+	u, err := url.Parse(siteURL)
+	if err != nil || u.Host == "" {
+		return "terminull.local"
+	}
+	return u.Host
+}
+
+// RenderSystemInfo returns the system info box. node is the host shown as
+// "Node:" (see SiteHost).
+func RenderSystemInfo(username, node string, width int) string {
 	dateStr := time.Now().Format("2006-01-02")
 	if username == "" {
 		username = "guest"
@@ -55,10 +67,40 @@ func RenderSystemInfo(username string, width int) string {
 		boxWidth = 78
 	}
 
-	lines := []string{
-		fmt.Sprintf("Connected: %s  |  User: %s  |  Node: terminull.local", dateStr, username),
-		"Protocol: SSH-2.0  |  Term: xterm-256color  |  Charset: UTF-8",
-	}
+	lines := append(connectedLines(dateStr, username, node, boxWidth-3),
+		"Protocol: SSH-2.0  |  Term: xterm-256color  |  Charset: UTF-8")
 
 	return RenderBoxFrame("SYSTEM INFO", lines, boxWidth)
+}
+
+// connectedLines fits "Connected | User | Node" into max columns: on one
+// line if it fits, else with the username shortened with "…", else (narrow
+// terminals) with the node on a line of its own.
+func connectedLines(dateStr, username, node string, max int) []string {
+	prefix := fmt.Sprintf("Connected: %s  |  User: ", dateStr)
+	suffix := "  |  Node: " + node
+	if lipgloss.Width(prefix+username+suffix) <= max {
+		return []string{prefix + username + suffix}
+	}
+	const minUser = 8 // shorter than this is no longer recognisable
+	if room := max - lipgloss.Width(prefix) - lipgloss.Width(suffix); room >= minUser {
+		return []string{prefix + truncateRunes(username, room) + suffix}
+	}
+	room := max - lipgloss.Width(prefix)
+	if room < 1 {
+		room = 1
+	}
+	return []string{prefix + truncateRunes(username, room), "Node: " + node}
+}
+
+// truncateRunes shortens s to at most n display columns, ending in "…".
+func truncateRunes(s string, n int) string {
+	if lipgloss.Width(s) <= n {
+		return s
+	}
+	r := []rune(s)
+	for len(r) > 0 && lipgloss.Width(string(r))+1 > n {
+		r = r[:len(r)-1]
+	}
+	return string(r) + "…"
 }

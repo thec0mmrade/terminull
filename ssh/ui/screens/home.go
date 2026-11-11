@@ -181,7 +181,7 @@ func (h *HomeScreen) View() string {
 		text   string
 		bright bool
 	}{
-		{"Connecting to terminull.local...", false},
+		{"Connecting to " + components.SiteHost(h.siteURL) + "...", false},
 		{"SSH-2.0 | xterm-256color | UTF-8", false},
 		{"Identity verified.", false},
 		{"Connection established.", true},
@@ -212,7 +212,7 @@ func (h *HomeScreen) View() string {
 	b.WriteString("\n\n")
 
 	// System info
-	b.WriteString(components.RenderSystemInfo(h.username, w))
+	b.WriteString(components.RenderSystemInfo(h.username, components.SiteHost(h.siteURL), w))
 	b.WriteString("\n\n")
 
 	// Menu

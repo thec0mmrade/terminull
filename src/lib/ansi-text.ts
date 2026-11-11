@@ -1,4 +1,5 @@
 import { versionLabel } from './version.js';
+import { siteHost } from './site-url.js';
 import { Marked } from 'marked';
 import { markedTerminal } from 'marked-terminal';
 import fs from 'node:fs';
@@ -142,7 +143,7 @@ const HR = `${C.borderBright}${'─'.repeat(WIDTH)}${C.reset}`;
 
 export function buildConnectionSequence(): string {
   return [
-    `${C.greenDim}Connecting to terminull.local...${C.reset}`,
+    `${C.greenDim}Connecting to ${siteHost()}...${C.reset}`,
     `${C.greenDim}SSH-2.0 | xterm-256color | UTF-8${C.reset}`,
     `${C.green}Connection established.${C.reset}`,
     '',
@@ -165,7 +166,7 @@ export function buildHeader(latestVolume: number): string {
   const dateStr = now.toISOString().split('T')[0];
 
   const sysInfo = [
-    `Connected: ${dateStr}  |  User: guest  |  Node: terminull.local`,
+    `Connected: ${dateStr}  |  User: guest  |  Node: ${siteHost()}`,
     `Protocol: SSH-2.0  |  Term: xterm-256color  |  Charset: UTF-8`,
   ];
 

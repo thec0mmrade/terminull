@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { getCollection } from 'astro:content';
 import BoxFrame from './BoxFrame.astro';
+import { siteHost } from '../lib/site-url.js';
 
 const now = new Date();
 const dateStr = now.toISOString().split('T')[0];
@@ -41,7 +42,7 @@ const logoLines = fs.readFileSync(logoPath, 'utf-8')
         <span class="value user">guest</span>
         <span class="sep">|</span>
         <span class="label">Node:</span>
-        <span class="value">terminull.local</span>
+        <span class="value">{siteHost()}</span>
       </div>
       <div class="system-info__line print-line print-line-13">
         <span class="label">Protocol:</span>

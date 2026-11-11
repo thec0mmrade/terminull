@@ -117,8 +117,7 @@ The name "terminull" appears in these locations. Update all of them:
 
 | File | What to change |
 |------|----------------|
-| `TERMINULL_SITE_URL` | Public site URL (environment or `deploy.env`; feeds Astro `site`, `.txt` footers, the zine back cover and the BBS) |
-| `src/components/BbsHeader.astro:23` | Node name in system info (`terminull.local`) |
+| `TERMINULL_SITE_URL` | Public site URL (environment or `deploy.env`; feeds Astro `site`, `.txt` footers, the zine back cover and the BBS). Its host is also the "node" name in every "Connecting to …" line and `Node:` field, on the web, in `.txt` and in the BBS (`siteHost()` in `src/lib/site-url.js`, `SiteHost()` in `ssh/ui/components/header.go`); unset, it is `terminull.local`. |
 | `src/components/BbsPrompt.astro:11` | Prompt prefix (`guest@terminull`) |
 | `src/components/BbsPrompt.astro:95,151` | Error messages (`terminull: cd:`, `terminull: command not found:`) |
 | `src/components/StatusBar.astro:13` | Status bar label (`terminull`) |
@@ -129,7 +128,6 @@ The name "terminull" appears in these locations. Update all of them:
 | `src/pages/index.astro:15` | Page title and description |
 | `src/pages/index.astro:25-26` | MOTD welcome text |
 | `src/pages/index.astro:34` | Footer text |
-| `src/lib/ansi-text.ts:128,131` | Connection sequence and system info (`terminull.local`) |
 | `src/content/pages/about.md` | Content references to the name |
 | `src/content/pages/manifesto.md` | Content references to the name |
 
@@ -216,13 +214,15 @@ The boot-up text at the top of every page. Edit
 
 ```html
 <div class="connection-sequence" aria-hidden="true">
-  <div class="line"><span class="label">Connecting to</span><span class="value"> terminull.local</span><span class="label">...</span><span class="ok"> OK</span></div>
+  <div class="line"><span class="label">Connecting to</span><span class="value"> {siteHost()}</span><span class="label">...</span><span class="ok"> OK</span></div>
   <div class="line"><span class="label">Verifying identity...</span><span class="value"> ANONYMOUS</span></div>
   <div class="line"><span class="label">Loading system...</span><span class="ok"> READY</span></div>
 </div>
 ```
 
-Use the `.label`, `.value`, and `.ok` classes for coloring. See
+`siteHost()` is the host of `TERMINULL_SITE_URL` (`terminull.local` when it
+is unset), so the line names your real domain. Use the `.label`, `.value`, and
+`.ok` classes for coloring. See
 `src/assets/styles/terminal.css:58-79` for their styles.
 
 ### System Info Box

@@ -10,6 +10,19 @@ git tag `vX.Y.Z`, and the version in `package.json` is what the site, the
 
 ## [Unreleased]
 
+### Changed
+
+- "Connecting to …" and "Node: …" now show the site's real hostname (the host
+  of `TERMINULL_SITE_URL`) instead of `terminull.local`: in the web page's
+  connection sequence and system info box, the `.txt` endpoints and the SSH
+  BBS. Without `TERMINULL_SITE_URL` they still say `terminull.local`.
+
+### Fixed
+
+- **SSH BBS:** a long username no longer pushes the system info box's right
+  border out of line. The username is shortened with "…", and on narrow
+  terminals the node moves to its own line.
+
 ## [1.0.0] - 2026-11-11
 
 The first versioned release.
