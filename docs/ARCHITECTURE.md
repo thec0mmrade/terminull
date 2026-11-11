@@ -9,7 +9,7 @@ See also: [DEVELOPMENT.md](./DEVELOPMENT.md) | [CONTRIBUTING.md](./CONTRIBUTING.
 
 ## Overview
 
-terminull is a static site built with [Astro 5](https://astro.build). It
+terminull is a static site built with [Astro 7](https://astro.build). It
 generates pure HTML+CSS pages with zero JavaScript required for core content.
 Interactive features (keyboard navigation, command prompt, search, CRT effect)
 are layered on top as progressive enhancements.
@@ -61,7 +61,9 @@ Build command: `astro build` (runs in ~800ms, produces 11 pages).
 
 ### Content Collections
 
-Defined in `src/content/config.ts`. Two collections with Zod-validated schemas:
+Defined in `src/content.config.ts`. Two collections with Zod-validated schemas,
+each loaded with Astro's `glob()` loader (issues: `vol*/*.{md,mdx}`, which
+keeps `_templates/` out of the build; pages: `*.{md,mdx}`):
 
 **issues** -- Articles organized by volume:
 
@@ -95,12 +97,14 @@ z.object({
 
 ### Slug Extraction
 
-Astro 5 content collection IDs include the full path and `.md` extension
-(e.g., `vol1/01-smashing-the-stack.md`). Slugs are extracted with:
+Content collection IDs include the volume directory (e.g.,
+`vol1/01-smashing-the-stack`). Since the move to the `glob()` loader they no
+longer carry the file extension, but the extraction below strips one if
+present, so it works either way. Slugs are extracted with:
 
 ```javascript
 article.id.replace(/.*\//, '').replace(/\.mdx?$/, '')
-// "vol1/01-smashing-the-stack.md" → "01-smashing-the-stack"
+// "vol1/01-smashing-the-stack" → "01-smashing-the-stack"
 ```
 
 This pattern appears in five files and must stay consistent:
@@ -790,8 +794,8 @@ src/
 │   ├── SearchOverlay.astro     # Search UI overlay
 │   ├── Seo.astro               # SEO/OG meta tags
 │   └── StatusBar.astro         # Fixed status bar
+├── content.config.ts           # Collection schemas (Zod) and loaders
 ├── content/
-│   ├── config.ts               # Collection schemas (Zod)
 │   ├── issues/vol1/            # Volume 1 articles
 │   └── pages/                  # Static pages (about, manifesto)
 ├── layouts/

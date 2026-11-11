@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
+import { unified } from '@astrojs/markdown-remark';
 import { rehypeTerminalCode } from './src/plugins/rehype-terminal-code.ts';
 import { remarkBbsAdmonitions } from './src/plugins/remark-bbs-admonitions.ts';
 
@@ -39,9 +40,16 @@ const shikiConfig = {
 export default defineConfig({
   site: 'https://terminull.pages.dev',
   integrations: [mdx()],
+  // Astro 7 defaults to JSX-style whitespace stripping; the ASCII art and
+  // box frames rely on HTML whitespace rules.
+  compressHTML: true,
   markdown: {
+    // Astro 7 defaults to the Sätteri processor. Stay on unified so the
+    // remark/rehype plugins below keep working.
+    processor: unified({
+      remarkPlugins: [remarkBbsAdmonitions],
+      rehypePlugins: [rehypeTerminalCode],
+    }),
     shikiConfig,
-    remarkPlugins: [remarkBbsAdmonitions],
-    rehypePlugins: [rehypeTerminalCode],
   },
 });

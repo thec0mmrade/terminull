@@ -18,7 +18,7 @@ The pipeline is defined in `.github/workflows/deploy.yml`. It triggers on:
 ### Pipeline Steps
 
 ```
-Checkout → Node 20 setup (npm cache) → npm ci → npm run build → Upload artifact → Deploy to GitHub Pages
+Checkout → Node 22 setup (npm cache) → npm ci → npm run build → Upload artifact → Deploy to GitHub Pages
 ```
 
 Two jobs: `build` produces the artifact, `deploy` publishes it.
@@ -160,8 +160,9 @@ Six runtime dependencies and two dev dependencies:
 
 | Package            | Version   | Purpose                                |
 |--------------------|-----------|----------------------------------------|
-| `astro`            | `^5.17.1` | Static site generator                  |
-| `@astrojs/mdx`     | `^4.3.13` | MDX support for content collections    |
+| `astro`            | `^7.4.1`  | Static site generator                  |
+| `@astrojs/mdx`     | `^8.1.0`  | MDX support for content collections    |
+| `@astrojs/markdown-remark` | `^7.3.7` | unified (remark/rehype) Markdown processor, needed for the custom plugins |
 | `ansi_up`          | `^6.0.6`  | ANSI escape code to HTML conversion    |
 | `unist-util-visit`  | `^5.1.0`  | AST traversal for remark/rehype plugins |
 | `marked`           | `^15`     | Markdown parser for ANSI text rendering |
@@ -201,11 +202,14 @@ go run golang.org/x/vuln/cmd/govulncheck@latest ./...
 Rebuild and restart the SSH BBS after Go updates -- a running server keeps the
 old binary. `ssh/go.mod` requires Go 1.26+.
 
-As of 2026-11-10, the `npm audit` advisories that remain (`astro`,
-`@astrojs/mdx`, `sharp`, `zod`, `zod-to-ts`, `esbuild`) are only fixed by the
-Astro 7 major upgrade. `github.com/charmbracelet/ssh` is pinned to a
-pseudo-version because its tagged releases moved to the `charm.land/ssh`
-module path.
+As of 2026-11-10, `npm audit` reports 0 vulnerabilities after the Astro 7
+upgrade. `github.com/charmbracelet/ssh` is pinned to a pseudo-version because
+its tagged releases moved to the `charm.land/ssh` module path.
+
+Astro 7 notes for this project (`astro.config.mjs`): the Markdown processor is
+set to `unified()` from `@astrojs/markdown-remark` because the admonition and
+code-header plugins are remark/rehype plugins, and `compressHTML: true` keeps
+HTML whitespace rules for the ASCII art. Node 22.12+ is required.
 
 ### Astro Major Version Upgrades
 

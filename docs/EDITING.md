@@ -29,7 +29,7 @@ Authors submit PRs with `draft: true` articles. Here is what to check.
 
 ### Frontmatter Validation
 
-Zod schema validation (`src/content/config.ts`) catches type errors and missing
+Zod schema validation (`src/content.config.ts`) catches type errors and missing
 required fields at build time. It does **not** catch semantic issues. Check
 manually:
 

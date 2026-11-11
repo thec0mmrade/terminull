@@ -161,7 +161,7 @@ See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for the full writing guide.
 
 | Dependency | Purpose |
 |------------|---------|
-| [Astro 5](https://astro.build) | Static site generator |
+| [Astro 7](https://astro.build) | Static site generator |
 | [@astrojs/mdx](https://docs.astro.build/en/guides/integrations-guide/mdx/) | MDX content collections |
 | [ansi_up](https://github.com/drudru/ansi_up) | ANSI escape code rendering |
 | [unist-util-visit](https://github.com/syntax-tree/unist-util-visit) | AST traversal for remark/rehype plugins |

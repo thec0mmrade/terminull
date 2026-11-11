@@ -103,7 +103,7 @@ draft: false
 | `fiction`       | pink  | Short stories, cyberpunk fiction, speculative pieces |
 | `interview`     | gold  | Q&A with hackers, researchers, artists           |
 
-Categories are defined in `src/content/config.ts` and color-mapped in
+Categories are defined in `src/content.config.ts` and color-mapped in
 `src/components/CategoryBadge.astro`.
 
 ---

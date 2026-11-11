@@ -8,7 +8,7 @@ See also: [ARCHITECTURE.md](./ARCHITECTURE.md) | [CONTRIBUTING.md](./CONTRIBUTIN
 
 ## Prerequisites
 
-- **Node.js 20+** and npm
+- **Node.js 22.12+** and npm
 - **git**
 - Familiarity with [Astro](https://astro.build) and Markdown
 
@@ -87,8 +87,8 @@ terminull/
 ├── src/
 │   ├── assets/styles/          # CSS files (5 files)
 │   ├── components/             # Astro components (15 files)
+│   ├── content.config.ts       # Collection schemas and loaders
 │   ├── content/
-│   │   ├── config.ts           # Collection schemas
 │   │   ├── issues/_templates/   # Template articles (drafts)
 │   │   └── pages/              # Static pages
 │   ├── layouts/                # Layout templates (3 files)
@@ -194,7 +194,7 @@ and update the `@font-face` declarations in `global.css:13-27` if changing it.
 
 To add a new category:
 
-1. Add it to the enum in `src/content/config.ts:12-15`:
+1. Add it to the enum in `src/content.config.ts`:
    ```typescript
    category: z.enum([
      'editorial', 'ascii-art', 'security-news', 'guide',
