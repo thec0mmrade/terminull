@@ -28,9 +28,7 @@ const { title, description, page = 'HOME', volume, type = 'website' } = Astro.pr
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet" />
+    <link rel="preload" href="/fonts/VT323-latin.woff2" as="font" type="font/woff2" crossorigin />
     <Seo title={title} description={description} type={type} />
   </head>
   <body>

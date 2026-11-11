@@ -5,6 +5,22 @@ terminull.example.com {
 	file_server
 	encode gzip
 
+	# Security headers. The CSP fits the built site: scripts are emitted as
+	# files (astro.config.mjs), fonts are self-hosted, articles may show
+	# images and media from other https sites, and nothing may frame the site.
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; media-src 'self' https:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+		Cross-Origin-Opener-Policy "same-origin"
+		Cross-Origin-Resource-Policy "same-origin"
+		X-Permitted-Cross-Domain-Policies "none"
+		-Server
+	}
+
 	# No custom 404 page: the build produces no 404.html, so Caddy's default is used.
 
 	# So `curl https://terminull.example.com/index.txt | less -R` works.

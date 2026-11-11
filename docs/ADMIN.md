@@ -234,16 +234,25 @@ Its configuration is the `bbs.env` file that publish writes into each release (s
 
 ### External Requests
 
-The only external request is **Google Fonts** (VT323), loaded via a `<link>`
-tag in `BaseLayout.astro`. This means:
+The site makes no third-party requests of its own: every font (VT323, IBM
+Plex Mono, the IBM VGA font) is self-hosted in `public/fonts/`, and every
+script is a file under `/_astro/`. The only outside requests are the ones an
+article makes itself, such as an image hosted elsewhere.
 
-- Google receives the visitor's IP on every page load
-- Google's font CSS and woff2 files are loaded from `fonts.googleapis.com` and
-  `fonts.gstatic.com`
+### Security headers
 
-To eliminate this, self-host VT323: download the woff2 file, add it to
-`public/fonts/`, add an `@font-face` declaration in `global.css`, and remove
-the Google Fonts `<link>` from `BaseLayout.astro`.
+Caddy adds them (`deploy/ansible/roles/terminull_host/templates/Caddyfile.j2`
+and `deploy/Caddyfile.example`): HSTS, a Content-Security-Policy,
+`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy: no-referrer`,
+`Permissions-Policy`, cross-origin isolation headers, and no `Server` header.
+
+The CSP allows scripts only from the site itself (`script-src 'self'`). That
+works because `astro.config.mjs` sets `vite.build.assetsInlineLimit: 0`, so
+Astro emits scripts as files instead of inlining them; keep it. Styles may be
+inline (Astro components use them). Images and media may come from any https
+site, so articles can show them. Nothing else from outside loads: an article
+that embeds an `<iframe>` (a video player, say) or a script from another site
+is blocked until you widen the policy.
 
 ---
 

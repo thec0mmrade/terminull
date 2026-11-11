@@ -174,17 +174,15 @@ hex values for code highlighting.
 
 ### Fonts
 
-The primary display font is **VT323** (Google Fonts), loaded in
-`src/layouts/BaseLayout.astro:33`:
+The primary display font is **VT323** (SIL OFL), self-hosted in
+`public/fonts/` as two subsets (`VT323-latin.woff2`, `VT323-latin-ext.woff2`,
+from `@fontsource/vt323`) with `@font-face` rules in
+`src/assets/styles/global.css`. `BaseLayout.astro` preloads the latin file.
 
-```html
-<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet" />
-```
-
-To change it:
-
-1. Update the Google Fonts `<link>` in `BaseLayout.astro:33`
-2. Update `font-family` in `src/assets/styles/global.css:36`
+To change it, replace the woff2 files and their `@font-face` rules, update the
+preload in `BaseLayout.astro`, and update `font-family` in `global.css`. Keep
+fonts self-hosted: the Content-Security-Policy only allows fonts from the site
+itself.
 
 The fallback font is **IBM Plex Mono** (self-hosted in `public/fonts/`), used
 for code blocks, ASCII art, and box-drawing characters. Replace the woff2 files

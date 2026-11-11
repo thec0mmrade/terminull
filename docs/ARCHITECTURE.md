@@ -143,7 +143,7 @@ in every `getStaticPaths()` and in the search index.
 BaseLayout.astro
 ├── <head>
 │   ├── Meta tags, viewport, generator
-│   ├── Google Fonts (VT323)
+│   ├── VT323 font preload (self-hosted)
 │   └── Seo.astro (title, OG, Twitter)
 ├── <body>
 │   ├── CrtEffect.astro (overlay div + toggle script)

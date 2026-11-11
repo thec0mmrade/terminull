@@ -8,6 +8,13 @@ entries are grouped by date. The format follows
 
 ### Added
 
+- **Security headers.** Caddy now sends HSTS, a Content-Security-Policy
+  (scripts only from the site itself), `X-Content-Type-Options`,
+  `X-Frame-Options`, `Referrer-Policy: no-referrer`, `Permissions-Policy` and
+  cross-origin isolation headers, and hides its `Server` header.
+- **VT323 is self-hosted.** The site no longer loads anything from Google
+  Fonts, so Google no longer sees visitors' IP addresses. The font's SIL Open
+  Font License is in `public/fonts/`.
 - **Server setup playbook.** `deploy/ansible/` configures a fresh Debian 13
   server end to end and is safe to re-run: packages, users, firewall, admin
   sshd on port 2200, Caddy, the BBS service and its sudo rule, and optionally

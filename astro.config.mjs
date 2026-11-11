@@ -53,4 +53,11 @@ export default defineConfig({
     }),
     shikiConfig,
   },
+  vite: {
+    build: {
+      // Emit every script as a file instead of inlining small ones, so the
+      // Content-Security-Policy can be script-src 'self' (no 'unsafe-inline').
+      assetsInlineLimit: 0,
+    },
+  },
 });
