@@ -13,6 +13,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Marked } from 'marked';
 import { volumesDir } from '../src/lib/paths.js';
+import { siteUrl } from '../src/lib/site-url.js';
 import puppeteer from 'puppeteer';
 import { PDFDocument } from 'pdf-lib';
 import {
@@ -938,7 +939,7 @@ function buildBackCover(volumeNum) {
     <div class="back-cover-title">terminull</div>
     <div class="back-cover-meta">Volume ${volumeNum} &mdash; ${dateStr}</div>
     <div class="back-cover-meta">no tracking // no ads // just text</div>
-    <div class="back-cover-url">https://terminull.net</div>
+    ${process.env.TERMINULL_SITE_URL ? `<div class="back-cover-url">${escapeHtml(siteUrl())}</div>` : ''}
   </div>
   `;
 }
@@ -1088,7 +1089,7 @@ async function main() {
 
 async function exportPdfs(browser, html, volumeNum) {
 
-  const outDir = path.join(ROOT, 'dist', 'zine');
+  const outDir = path.join(ROOT, 'public', 'zine');
   fs.mkdirSync(outDir, { recursive: true });
 
   const readerPath = path.join(outDir, `terminull-vol${volumeNum}.pdf`);

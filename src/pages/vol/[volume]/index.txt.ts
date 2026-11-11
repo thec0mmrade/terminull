@@ -6,6 +6,7 @@ import {
   buildFooter,
   textResponse,
 } from '../../../lib/ansi-text';
+import { siteUrl } from '../../../lib/site-url.js';
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const allArticles = await getCollection('issues', ({ data }) => !data.draft);
@@ -32,7 +33,7 @@ export function GET({ props }: { props: { volume: number; articles: any[]; lates
   const body = [
     buildHeader(latestVolume),
     buildVolumeToc(volume, articles),
-    buildFooter(),
+    buildFooter(siteUrl()),
   ].join('\n');
 
   return textResponse(body);

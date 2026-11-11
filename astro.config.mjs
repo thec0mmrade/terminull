@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import { unified } from '@astrojs/markdown-remark';
+import { siteUrl } from './src/lib/site-url.js';
 import { rehypeTerminalCode } from './src/plugins/rehype-terminal-code.ts';
 import { remarkBbsAdmonitions } from './src/plugins/remark-bbs-admonitions.ts';
 
@@ -38,7 +39,7 @@ const shikiConfig = {
 };
 
 export default defineConfig({
-  site: 'https://terminull.pages.dev',
+  site: siteUrl(),
   integrations: [mdx()],
   // Astro 7 defaults to JSX-style whitespace stripping; the ASCII art and
   // box frames rely on HTML whitespace rules.

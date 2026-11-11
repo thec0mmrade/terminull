@@ -257,11 +257,11 @@ export function buildArticleNav(opts: {
   return lines.join('\n');
 }
 
-export function buildFooter(): string {
+export function buildFooter(site: string): string {
   return [
     HR,
     `${C.muted}terminull v1.0 // no tracking // no ads // just text${C.reset}`,
-    `${C.muted}https://terminull.local${C.reset}`,
+    `${C.muted}${site}${C.reset}`,
     '',
   ].join('\n');
 }

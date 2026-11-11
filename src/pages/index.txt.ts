@@ -6,6 +6,7 @@ import {
   textResponse,
   C,
 } from '../lib/ansi-text';
+import { siteUrl } from '../lib/site-url.js';
 
 export async function GET() {
   const articles = await getCollection('issues', ({ data }) => !data.draft);
@@ -29,7 +30,7 @@ export async function GET() {
     `${C.secondary}researchers, artists, and anyone who believes knowledge${C.reset}`,
     `${C.secondary}should be free.${C.reset}`,
     '',
-    buildFooter(),
+    buildFooter(siteUrl()),
   ].join('\n');
 
   return textResponse(body);

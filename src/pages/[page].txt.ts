@@ -7,6 +7,7 @@ import {
   textResponse,
   C,
 } from '../lib/ansi-text';
+import { siteUrl } from '../lib/site-url.js';
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const pages = await getCollection('pages');
@@ -31,7 +32,7 @@ export function GET({ props }: { props: { page: any; latestVolume: number } }) {
     `${C.gold}${C.bold}${page.data.title.toUpperCase()}${C.reset}`,
     '',
     content,
-    buildFooter(),
+    buildFooter(siteUrl()),
   ].join('\n');
 
   return textResponse(body);

@@ -11,6 +11,7 @@ import {
   renderMarkdownToAnsi,
   textResponse,
 } from '../../../lib/ansi-text';
+import { siteUrl } from '../../../lib/site-url.js';
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const allArticles = await getCollection('issues', ({ data }) => !data.draft);
@@ -90,7 +91,7 @@ export function GET({ props, site, url }: APIContext) {
       nextSlug,
       nextTitle,
     }),
-    buildFooter(),
+    buildFooter(siteUrl()),
   ].join('\n');
 
   return textResponse(body);

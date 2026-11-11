@@ -36,3 +36,6 @@ src/content/volumes/
 ASCII-ANSI-ART.md
 docs/LANGUAGES.md
 docs/SSH-CONNECTION.md
+
+# generated zine PDFs (copied into dist/ by astro build)
+public/zine/
