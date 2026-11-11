@@ -73,7 +73,7 @@ terminull/
 │   └── config.go              # Env/flag configuration
 ├── public/
 │   ├── art/                   # ASCII/ANSI art files
-│   └── fonts/                 # IBM Plex Mono (self-hosted)
+│   └── fonts/                 # VT323, IBM Plex Mono, IBM VGA (self-hosted)
 ├── scripts/                   # Zine export, publish workflow
 ├── deploy/                    # Server setup playbook (ansible/) and templates
 └── docs/                      # Documentation
@@ -191,7 +191,7 @@ See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for the full writing guide.
 
 ## Deployment
 
-terminull is published to a single server that serves the website, the zine PDFs and the SSH BBS. The one-time server setup is an Ansible playbook (`deploy/ansible/`) for any Debian 13 server; see [docs/DEPLOY.md](docs/DEPLOY.md). After that, publishing is:
+terminull is published to a single server that serves the website, the zine PDFs and the SSH BBS. The one-time server setup is an Ansible playbook (`deploy/ansible/`) for any Debian 13 server; see [docs/DEPLOY.md](docs/DEPLOY.md). The site makes no third-party requests (all fonts are self-hosted), and Caddy serves it with HSTS and a strict Content-Security-Policy. After that, publishing is:
 
 ```bash
 cp deploy.env.example deploy.env   # once; fill in your host and site URL

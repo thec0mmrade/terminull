@@ -43,7 +43,7 @@ What it does:
 - Turns on unattended upgrades, with an automatic reboot at 04:00 when an update needs one.
 - Creates `admin` (key-only login, passwordless sudo), `deploy` and `terminull`, and the directories in step 4.
 - Sets up `ufw`, moves the admin sshd to port 2200, then proves a fresh `admin` login on 2200 works before finishing.
-- Installs Caddy, the Caddyfile, the BBS service and the `deploy` sudo rule.
+- Installs Caddy and the Caddyfile (HTTPS, the `.txt` content type, and security headers including a Content-Security-Policy; see [ADMIN.md](./ADMIN.md#security-headers)), the BBS service and the `deploy` sudo rule.
 - With `bbs_host_key_src` set, restores a backed-up BBS host key (see [Backing up the BBS host key](#backing-up-the-bbs-host-key)).
 
 The first run logs in as `root` on port 22. Every later run logs in as `admin` on 2200; the playbook picks by itself. When it finishes, continue at [step 7](#7-laptop-the-content-repo).

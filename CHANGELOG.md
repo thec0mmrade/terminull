@@ -10,9 +10,9 @@ entries are grouped by date. The format follows
 
 - **Security headers.** Caddy now sends HSTS, a Content-Security-Policy
   (scripts only from the site itself; frames only from YouTube),
-  `X-Content-Type-Options`,
-  `X-Frame-Options`, `Referrer-Policy: no-referrer`, `Permissions-Policy` and
-  cross-origin isolation headers, and hides its `Server` header.
+  `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy: no-referrer`,
+  `Permissions-Policy` and cross-origin isolation headers, and hides its
+  `Server` header.
 - **VT323 is self-hosted.** The site no longer loads anything from Google
   Fonts, so Google no longer sees visitors' IP addresses. The font's SIL Open
   Font License is in `public/fonts/`.
@@ -55,6 +55,11 @@ entries are grouped by date. The format follows
 
 ### Changed
 
+- Astro now emits every script as a file under `/_astro/` instead of inlining
+  small ones (`vite.build.assetsInlineLimit: 0`), so the CSP can forbid inline
+  scripts.
+- `docs/CONTRIBUTING.md` says how to embed YouTube and what the CSP allows in
+  articles.
 - An article's `date` may be absent for ANSI art without a dated SAUCE record.
   It is still required for written articles.
 - The zine exporter now imports `src/lib/ansi-art.js`; it is no longer a

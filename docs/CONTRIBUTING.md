@@ -280,6 +280,32 @@ Use `.mdx` file extension to embed `<audio>` elements:
 
 Audio players render at full width. Place media files in `public/media/`.
 
+### YouTube (MDX only)
+
+Use the privacy-enhanced embed address, which sets no tracking cookies until
+the reader presses play:
+
+```mdx
+<iframe src="https://www.youtube-nocookie.com/embed/VIDEO_ID"
+  title="What the video shows" width="560" height="315" allowfullscreen></iframe>
+```
+
+Only the website plays it: the SSH BBS, the `.txt` endpoints and the print
+zine can't, so also give the plain `https://www.youtube.com/watch?v=VIDEO_ID`
+link in the text.
+
+### What the site's security policy allows
+
+The site sends a Content-Security-Policy (see [ADMIN.md](./ADMIN.md)), so an
+article can use:
+
+- images and `<video>`/`<audio>` from this site or any `https://` address;
+- YouTube embeds (`www.youtube.com` or `www.youtube-nocookie.com`).
+
+It cannot use scripts (inline or from another site) or iframes from any other
+site: the browser blocks them and shows an empty space. Ask the site admin to
+allow a new embed host if an article needs one.
+
 ---
 
 ## Content Conventions
