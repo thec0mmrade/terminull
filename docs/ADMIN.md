@@ -250,9 +250,11 @@ The CSP allows scripts only from the site itself (`script-src 'self'`). That
 works because `astro.config.mjs` sets `vite.build.assetsInlineLimit: 0`, so
 Astro emits scripts as files instead of inlining them; keep it. Styles may be
 inline (Astro components use them). Images and media may come from any https
-site, so articles can show them. Nothing else from outside loads: an article
-that embeds an `<iframe>` (a video player, say) or a script from another site
-is blocked until you widen the policy.
+site, so articles can show them. Frames may come only from YouTube
+(`www.youtube.com` and the privacy-enhanced `www.youtube-nocookie.com`), so
+YouTube embeds work. Nothing else from outside loads: an article that embeds
+any other `<iframe>` or a script from another site is blocked until you add
+that host to `frame-src` or `script-src`.
 
 ---
 

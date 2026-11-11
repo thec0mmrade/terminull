@@ -9,7 +9,8 @@ entries are grouped by date. The format follows
 ### Added
 
 - **Security headers.** Caddy now sends HSTS, a Content-Security-Policy
-  (scripts only from the site itself), `X-Content-Type-Options`,
+  (scripts only from the site itself; frames only from YouTube),
+  `X-Content-Type-Options`,
   `X-Frame-Options`, `Referrer-Policy: no-referrer`, `Permissions-Policy` and
   cross-origin isolation headers, and hides its `Server` header.
 - **VT323 is self-hosted.** The site no longer loads anything from Google
