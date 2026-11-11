@@ -1,0 +1,11 @@
+# Install as /etc/caddy/Caddyfile. Replace the hostname with your own.
+# Paths assume DEPLOY_PATH=/srv/terminull. Caddy gets the HTTPS certificate itself.
+terminull.example.com {
+	root * /srv/terminull/current/site
+	file_server
+	encode gzip
+
+	# So `curl https://terminull.example.com/index.txt | less -R` works.
+	@txt path *.txt
+	header @txt Content-Type "text/plain; charset=utf-8"
+}

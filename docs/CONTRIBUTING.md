@@ -26,10 +26,10 @@ A good submission is:
 
 ### File Location
 
-Articles live in `src/content/issues/vol{N}/` where `{N}` is the volume number.
+Articles live in `src/content/volumes/vol{N}/` where `{N}` is the volume number. That folder is the zine's content repo, kept separate from the engine repo (see [DEVELOPMENT.md](./DEVELOPMENT.md)); starter templates are in `src/content/templates/`.
 
 ```
-src/content/issues/
+src/content/volumes/
 └── vol{N}/
     ├── 00-editorial.md
     ├── 01-first-article.md
@@ -333,7 +333,7 @@ A classic BBS ANSI art file can be an article by itself. Put the `.ANS` file
 in the volume folder, named like any article:
 
 ```
-src/content/issues/vol1/11-xibalba.ans
+src/content/volumes/vol1/11-xibalba.ans
 ```
 
 That is the whole step. There is no markdown file and no frontmatter:
@@ -380,7 +380,7 @@ For reusable art, add files to `public/art/` and reference them via the
 
 1. **Fork** the repository and clone it locally.
 
-2. **Create your article** in `src/content/issues/vol{N}/`:
+2. **Create your article** in `src/content/volumes/vol{N}/` (the content repo; copy a template from `src/content/templates/`):
    ```
    {order:2d}-{your-slug}.md
    ```
@@ -410,7 +410,7 @@ For reusable art, add files to `public/art/` and reference them via the
    you need a video or audio embed.
 
 7. **Publication** -- once approved, `draft` is set to `false` and the article
-   goes live on the next deploy.
+   goes live on the next `npm run publish`.
 
 ---
 

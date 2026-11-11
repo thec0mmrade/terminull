@@ -47,7 +47,7 @@ npm run zine                  # Export latest volume as PDF
 npm run zine -- --volume 1    # Export specific volume
 ```
 
-Outputs two PDFs to `dist/zine/`: a reader version (5.5"×8.5" portrait) and a
+Outputs two PDFs to `public/zine/` (gitignored; `npm run build` copies them into `dist/zine/`, and volume TOC pages link them when present): a reader version (5.5"×8.5" portrait) and a
 booklet imposition (11"×8.5" landscape, 2-up saddle-stitch spreads). Requires
 `puppeteer` and `pdf-lib` (dev dependencies, installed via `npm install`).
 
@@ -89,16 +89,18 @@ terminull/
 │   ├── components/             # Astro components (15 files)
 │   ├── content.config.ts       # Collection schemas and loaders
 │   ├── content/
-│   │   ├── issues/_templates/   # Template articles (drafts)
+│   │   ├── templates/           # Template articles (drafts)
+│   │   ├── volumes/             # Your issues (private content repo, gitignored)
 │   │   └── pages/              # Static pages
 │   ├── layouts/                # Layout templates (3 files)
 │   ├── lib/                    # Utility modules
 │   ├── pages/                  # Route files
 │   └── plugins/                # Remark/rehype plugins
 ├── scripts/
-│   └── export-zine.js          # Print zine PDF exporter
-├── .github/workflows/
-│   └── deploy.yml              # Cloudflare Pages deployment
+│   ├── export-zine.js          # Print zine PDF exporter
+│   ├── publish.js              # One-command deploy (npm run publish)
+│   └── publish/                # Config, preflight, remote and verify helpers
+├── deploy/                     # Server templates (systemd, Caddy, sudoers)
 └── docs/                       # Documentation (you are here)
 ```
 
@@ -115,7 +117,7 @@ The name "terminull" appears in these locations. Update all of them:
 
 | File | What to change |
 |------|----------------|
-| `astro.config.mjs:40` | `site` URL (`https://terminull.pages.dev`) |
+| `TERMINULL_SITE_URL` | Public site URL (environment or `deploy.env`; feeds Astro `site`, `.txt` footers, the zine back cover and the BBS) |
 | `src/components/BbsHeader.astro:23` | Node name in system info (`terminull.local`) |
 | `src/components/BbsPrompt.astro:11` | Prompt prefix (`guest@terminull`) |
 | `src/components/BbsPrompt.astro:95,151` | Error messages (`terminull: cd:`, `terminull: command not found:`) |
@@ -282,17 +284,15 @@ Use the `AnsiArt` component for ANSI escape-coded art:
 
 ### Creating a New Volume
 
-1. Create the directory:
+1. Create the directory in your content repo:
    ```
-   src/content/issues/vol2/
+   src/content/volumes/vol2/
    ```
+   (`src/content/volumes/` is a separate, private git repo. The engine repo
+   ignores it. Set `TERMINULL_VOLUMES_DIR` to keep it elsewhere.)
 
-2. Add an entry to the volumes array in `src/pages/vol/index.astro`:
-   ```typescript
-   const volumes = [
-     { label: 'Volume 1', href: '/vol/1', description: 'June 2025 -- Inaugural Issue' },
-   ];
-   ```
+2. The Archive page (`/vol`) lists volumes automatically; there is no array to
+   update.
 
 3. Add a `Latest Issue` menu item to `src/pages/index.astro` if desired:
    ```typescript
@@ -312,7 +312,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full article writing guide.
 
 Quick reference:
 
-1. Create `src/content/issues/vol{N}/{order:2d}-{slug}.md`
+1. Create `src/content/volumes/vol{N}/{order:2d}-{slug}.md` (copy a starter from `src/content/templates/`)
 2. Add frontmatter (title, author, date, volume, order, category, description)
 3. Set `draft: true` during development
 4. Write content in Markdown
@@ -341,50 +341,24 @@ Quick reference:
 
 ## Deployment
 
-terminull builds to a static `dist/` directory. It works on any static hosting
-provider.
-
-### Cloudflare Pages (Current)
-
-The project includes `.github/workflows/deploy.yml` for Cloudflare Pages
-deployment. Set the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` secrets
-in your GitHub repo settings.
-
-### GitHub Pages
-
-```yaml
-# .github/workflows/deploy.yml
-name: Deploy
-on:
-  push:
-    branches: [main]
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - run: npm ci
-      - run: npm run build
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist/
-      - uses: actions/deploy-pages@v4
-```
-
-### Netlify / Vercel
-
-Set the build command to `npm run build` and the output directory to `dist/`.
-No additional configuration needed.
-
-### Any Static Host
+Your issues live in a separate private git repo (checked out at
+`src/content/volumes/`), and the site is published to a single server with one
+command:
 
 ```bash
-npm run build
-# Upload contents of dist/ to your server
+cp deploy.env.example deploy.env   # once; gitignored
+npm run publish                    # --dry-run builds without uploading
 ```
+
+Publish checks that the content repo is committed and pushed, builds the site,
+zine PDFs for every volume and a static Linux BBS binary, uploads a release,
+switches to it, verifies it and rolls back on failure. `npm test` runs its unit
+tests. The server setup is a one-time job: see [DEPLOY.md](./DEPLOY.md). On
+NixOS, run it via
+`nix shell nixpkgs#go nixpkgs#chromium -c env -u LD_LIBRARY_PATH sh -c 'PUPPETEER_EXECUTABLE_PATH=$(which chromium) npm run publish'`.
+
+The static `dist/` also works on any static host, but the BBS and the publish
+workflow assume the server.
 
 ---
 

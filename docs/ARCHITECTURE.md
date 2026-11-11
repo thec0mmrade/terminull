@@ -63,7 +63,7 @@ Build command: `astro build` (runs in ~800ms, produces 11 pages).
 
 Defined in `src/content.config.ts`. Two collections with Zod-validated schemas,
 each loaded with Astro's `glob()` loader (issues: `vol*/*.{md,mdx}`, which
-keeps `_templates/` out of the build; pages: `*.{md,mdx}`):
+is matched inside the volumes directory, `src/content/volumes/` by default or `TERMINULL_VOLUMES_DIR`, so `src/content/templates/` stays out of the build; pages: `*.{md,mdx}`). The volumes directory is a separate private content repo, gitignored by the engine:
 
 **issues** -- Articles organized by volume:
 
@@ -122,7 +122,7 @@ This pattern appears in five files and must stay consistent:
 | `src/pages/index.astro`               | `/`                      | Static                  |
 | `src/pages/help.astro`                | `/help`                  | Static                  |
 | `src/pages/[page].astro`              | `/{page}`                | `pages` collection      |
-| `src/pages/vol/index.astro`           | `/vol`                   | Static volumes array    |
+| `src/pages/vol/index.astro`           | `/vol`                   | `issues` collection     |
 | `src/pages/vol/[volume]/index.astro`  | `/vol/{n}`               | `issues` collection     |
 | `src/pages/vol/[volume]/[slug].astro` | `/vol/{n}/{slug}`        | `issues` collection     |
 | `src/pages/search-index.json.ts`      | `/search-index.json`     | `issues` collection     |
@@ -655,9 +655,9 @@ main.go (Wish SSH server)
 
 ### Content Loading
 
-`content/loader.go` scans `src/content/` at startup:
+`content/loader.go` loads pages from `src/content/pages/` and volumes from the volumes directory (`--volumes-dir` / `TERMINULL_VOLUMES_DIR`, default `../src/content/volumes`) at startup:
 
-1. Scans `issues/vol{N}/` directories for `.md`/`.mdx` files
+1. Scans `vol{N}/` directories for `.md`/`.mdx` files
 2. Splits YAML frontmatter at `---` fences, parses with `gopkg.in/yaml.v3`
 3. Extracts slug from filename (`strings.TrimSuffix(name, ext)`)
 4. Skips `draft: true` articles
@@ -770,7 +770,7 @@ PDFs. Run with `npm run zine` or `npm run zine -- --volume N`.
 ### Pipeline
 
 ```
-Raw markdown (src/content/issues/vol{N}/)
+Raw markdown (src/content/volumes/vol{N}/)
   → Parse frontmatter (built-in YAML parser, filter drafts, sort by order)
   → Preprocess admonitions + media placeholders
   → Render HTML via marked (custom renderer: link footnotes, styled admonitions)
@@ -790,7 +790,7 @@ they meet cleanly. Strips never split across a page.
 
 ### Content Loading
 
-Reads raw markdown from `src/content/issues/vol{N}/`. Has its own simple YAML
+Reads raw markdown from `src/content/volumes/vol{N}/` (or `TERMINULL_VOLUMES_DIR`). Has its own simple YAML
 frontmatter parser (no external YAML dependency). Filters `draft: true`
 articles and sorts by `order` field.
 
@@ -817,10 +817,27 @@ of 4. Pre-compensated for short-edge duplex binding.
 
 ### Output
 
-Two files in `dist/zine/`:
+Two files in `public/zine/` (gitignored; `npm run build` copies them into `dist/zine/`, and volume TOC pages link them when present):
 
 - `terminull-vol{N}.pdf` -- Reader version (5.5"×8.5" portrait pages)
 - `terminull-vol{N}-booklet.pdf` -- Booklet imposition (11"×8.5" landscape, 2-up saddle-stitch spreads)
+
+---
+
+## Publishing
+
+`npm run publish` (`scripts/publish.js`, helpers in `scripts/publish/`) deploys to one server. Content is kept apart from the engine: issues live in a private git repo checked out at `src/content/volumes/`, and publishing requires it to be committed and pushed.
+
+```
+preflight (deploy.env, content repo clean/pushed, ssh)
+  → build (zine per volume → public/zine/, astro build → dist/, static Linux BBS binary)
+  → stage (site/, content/, bin/, bbs.env)
+  → rsync to <DEPLOY_PATH>/releases/<name>/, write RELEASE
+  → switch `current` (relative symlink, mv -T) + restart terminull-bbs
+  → verify HTTPS and SSH banner; roll back on failure; prune old releases
+```
+
+The public URL comes from `TERMINULL_SITE_URL` (`src/lib/site-url.js`) everywhere. Caddy serves `current/site`; the BBS reads `current/content` and keeps its host key in `shared/`. Server setup, config keys and rollback: [DEPLOY.md](./DEPLOY.md).
 
 ---
 
@@ -828,7 +845,11 @@ Two files in `dist/zine/`:
 
 ```
 scripts/
-└── export-zine.js              # Print zine PDF export
+├── export-zine.js              # Print zine PDF export
+├── publish.js                  # One-command deploy (see DEPLOY.md)
+└── publish/                    # Config, preflight, remote, verify helpers
+
+deploy/                         # Server templates: systemd unit, Caddyfile, sudoers
 
 src/
 ├── assets/styles/
@@ -856,7 +877,8 @@ src/
 │   └── StatusBar.astro         # Fixed status bar
 ├── content.config.ts           # Collection schemas (Zod) and loaders
 ├── content/
-│   ├── issues/vol1/            # Volume 1 articles
+│   ├── templates/              # Starter articles (drafts)
+│   ├── volumes/vol1/           # Your issues (private content repo, gitignored)
 │   └── pages/                  # Static pages (about, manifesto)
 ├── layouts/
 │   ├── BaseLayout.astro        # Root layout shell

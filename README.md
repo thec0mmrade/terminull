@@ -45,6 +45,9 @@ Open `http://localhost:4321`. Navigate with keyboard or the command prompt at th
 npm run dev       # Start dev server with hot reload
 npm run build     # Production build to dist/ (~800ms)
 npm run preview   # Serve the built site locally
+npm test          # Unit tests for the publish workflow
+npm run zine      # Export the latest volume as PDF (to public/zine/)
+npm run publish   # Deploy to your server (see docs/DEPLOY.md)
 ```
 
 ## Project Structure
@@ -53,7 +56,8 @@ npm run preview   # Serve the built site locally
 terminull/
 ├── src/
 │   ├── content/
-│   │   ├── issues/_templates/  # Template articles (drafts)
+│   │   ├── templates/         # Template articles (drafts)
+│   │   ├── volumes/           # Your issues: a separate private repo (gitignored here)
 │   │   └── pages/             # Static pages (about, manifesto)
 │   ├── components/            # Astro components (15 files)
 │   ├── layouts/               # BaseLayout, ArticleLayout, IssueLayout
@@ -70,8 +74,9 @@ terminull/
 ├── public/
 │   ├── art/                   # ASCII/ANSI art files
 │   └── fonts/                 # IBM Plex Mono (self-hosted)
-├── docs/                      # Documentation
-└── .github/workflows/         # GitHub Pages deployment
+├── scripts/                   # Zine export, publish workflow
+├── deploy/                    # Server templates (systemd unit, Caddyfile, sudoers)
+└── docs/                      # Documentation
 ```
 
 ## Reading in a Terminal
@@ -116,6 +121,7 @@ Configuration via environment variables or flags:
 | `TERMINULL_PORT` | `--port` | 2222 |
 | `TERMINULL_HOST` | `--host` | 0.0.0.0 |
 | `TERMINULL_CONTENT_DIR` | `--content-dir` | ../src/content |
+| `TERMINULL_VOLUMES_DIR` | `--volumes-dir` | ../src/content/volumes |
 | `TERMINULL_SITE_URL` | `--site-url` | https://terminull.local |
 | `TERMINULL_HOST_KEY` | `--host-key` | ./ssh_host_ed25519_key |
 | `TERMINULL_MAX_SESSIONS` | `--max-sessions` | 100 |
@@ -124,7 +130,8 @@ The host key is auto-generated on first run.
 
 ## Writing Articles
 
-Articles are markdown files in `src/content/issues/vol{N}/`:
+Articles are markdown files in `src/content/volumes/vol{N}/`. That folder is not part of this repo: it is gitignored, and you keep your issues in a separate (private) git repo cloned there (`git clone <your-content-repo> src/content/volumes`). Starter templates are in `src/content/templates/`.
+
 
 ```yaml
 ---
@@ -184,15 +191,14 @@ See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for the full writing guide.
 
 ## Deployment
 
-terminull builds to a static `dist/` directory. Deploy it anywhere:
+terminull is published to a single server that serves the website, the zine PDFs and the SSH BBS. Once the server is set up (one-time, see [docs/DEPLOY.md](docs/DEPLOY.md)), publishing is:
 
 ```bash
-npm run build
-# Upload dist/ to any static host
+cp deploy.env.example deploy.env   # once; fill in your host and site URL
+npm run publish                    # or: npm run publish -- --dry-run
 ```
 
-GitHub Pages deployment is preconfigured in `.github/workflows/deploy.yml`.
-Works out of the box with Cloudflare Pages, Netlify, Vercel, or any web server.
+It checks that your content repo is committed and pushed, builds, uploads a new release, switches to it and verifies it, rolling back automatically on failure. The public URL comes from `TERMINULL_SITE_URL`.
 
 ## License
 

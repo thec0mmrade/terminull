@@ -1,0 +1,3 @@
+# Install as /etc/sudoers.d/terminull-deploy (mode 0440), validated with visudo -cf.
+# Lets the deploy user restart the BBS after switching releases, and nothing else.
+deploy ALL=(root) NOPASSWD: /usr/bin/systemctl restart terminull-bbs

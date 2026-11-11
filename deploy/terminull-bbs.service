@@ -1,0 +1,27 @@
+# terminull SSH BBS. Install as /etc/systemd/system/terminull-bbs.service.
+# Paths assume DEPLOY_PATH=/srv/terminull; edit them together if you change it.
+[Unit]
+Description=terminull SSH BBS
+After=network.target
+
+[Service]
+Type=simple
+User=terminull
+EnvironmentFile=/srv/terminull/current/bbs.env
+ExecStart=/srv/terminull/current/bin/terminull-ssh
+# Bind port 22 without running as root.
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+Restart=on-failure
+RestartSec=5
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+# The BBS generates and keeps its host key here.
+ReadWritePaths=/srv/terminull/shared
+MemoryMax=512M
+
+[Install]
+WantedBy=multi-user.target

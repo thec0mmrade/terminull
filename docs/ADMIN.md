@@ -6,149 +6,39 @@ See also: [EDITING.md](./EDITING.md) | [DEVELOPMENT.md](./DEVELOPMENT.md) | [ARC
 
 ---
 
-## Deployment Pipeline
+## Deployment
 
-### Current Setup: GitHub Pages
+terminull is deployed to a single server that serves the website, the zine PDFs and the SSH BBS. Publishing is one command run from your laptop:
 
-The pipeline is defined in `.github/workflows/deploy.yml`. It triggers on:
-
-- **Push to `main`** -- automatic deploy on every merge
-- **`workflow_dispatch`** -- manual trigger for redeployment without code changes
-
-### Pipeline Steps
-
-```
-Checkout → Node 22 setup (npm cache) → npm ci → npm run build → Upload artifact → Deploy to GitHub Pages
+```bash
+npm run publish
 ```
 
-Two jobs: `build` produces the artifact, `deploy` publishes it.
+It checks that the content repo is committed and pushed, builds, uploads a new release, switches to it, verifies it and rolls back on failure. There is no CI deploy: a deploy is a deliberate local act.
 
-### Required GitHub Repo Settings
-
-The workflow declares these permissions:
-
-```yaml
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-```
-
-In your repo's Settings > Pages, set the source to **GitHub Actions** (not
-"Deploy from a branch").
-
-The `concurrency` block (`group: pages`, `cancel-in-progress: false`) ensures
-only one deployment runs at a time and in-progress deploys are not cancelled.
-
-### GitHub Pages Hardening
-
-1. **Branch protection on `main`**: Require pull request reviews before merge.
-   Prevents direct pushes that bypass review (including malicious content files
-   that could affect the SSH BBS loader).
-2. **Environment protection rules**: In Settings > Environments > `github-pages`,
-   enable required reviewers for production deploys if needed.
-3. **Limit Actions permissions**: The workflow only needs `contents: read`,
-   `pages: write`, and `id-token: write`. Do not grant broader permissions.
-4. **Pin Action versions**: The workflow should pin actions to commit SHAs
-   rather than tags to prevent supply chain attacks:
-   ```yaml
-   - uses: actions/checkout@<commit-sha>     # instead of @v4
-   - uses: actions/setup-node@<commit-sha>   # instead of @v4
-   ```
-5. **Custom domain**: If using a custom domain, enable **Enforce HTTPS** in
-   Settings > Pages. Add a `CNAME` file to `public/` so Astro includes it in
-   `dist/`.
-6. **`site` URL mismatch**: `astro.config.mjs` currently has
-   `site: 'https://terminull.pages.dev'` (Cloudflare Pages URL). If deploying
-   to GitHub Pages, update this to your GitHub Pages URL so canonical URLs,
-   Open Graph tags, and sitemap are correct.
-
-### Manual Deploy
-
-Use the `workflow_dispatch` trigger in GitHub Actions (Actions tab > "Deploy to
-GitHub Pages" > "Run workflow"). Useful for redeploying after a GitHub Pages
-issue without pushing a code change.
-
-### Deploying to Vercel
-
-Vercel auto-detects Astro projects. No `vercel.json` needed for basic setup.
-
-**Setup:**
-
-1. Import the repo at vercel.com/new
-2. Vercel detects Astro, sets build command (`npm run build`) and output
-   directory (`dist/`) automatically
-3. Set the `site` value in `astro.config.mjs` to your Vercel domain
-
-**Hardening:**
-
-1. **Environment variables**: If you add env vars, use Vercel's encrypted
-   environment variables (Settings > Environment Variables). Never commit
-   secrets to the repo.
-2. **Deployment protection**: Enable Vercel Authentication or password
-   protection on preview deployments to prevent leaking draft content on
-   preview URLs.
-3. **Production branch**: Lock production deployments to the `main` branch
-   only (Settings > Git > Production Branch).
-4. **Headers**: Add a `vercel.json` for security headers:
-   ```json
-   {
-     "headers": [
-       {
-         "source": "/(.*)",
-         "headers": [
-           { "key": "X-Content-Type-Options", "value": "nosniff" },
-           { "key": "X-Frame-Options", "value": "DENY" },
-           { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
-         ]
-       }
-     ]
-   }
-   ```
-5. **Preview URL access**: By default, every push creates a preview deployment
-   with a public URL. Disable preview deployments or restrict access if draft
-   articles should not be publicly visible before merge.
-
-### Alternative Hosts
-
-terminull builds to a static `dist/` directory. It works on any static host:
-
-| Host             | Build command    | Output dir | Notes                              |
-|------------------|------------------|------------|------------------------------------|
-| GitHub Pages     | `npm run build`  | `dist/`    | Current setup, via Actions         |
-| Cloudflare Pages | `npm run build`  | `dist/`    | Set in dashboard or `wrangler`     |
-| Netlify          | `npm run build`  | `dist/`    | Set in `netlify.toml` or dashboard |
-| Vercel           | `npm run build`  | `dist/`    | Auto-detected from Astro           |
-| nginx            | `npm run build`  | `dist/`    | Copy `dist/` to web root           |
-
-No SSR, no edge functions, no server runtime. Any host that serves static
-files works.
+The one-time server setup (OS, DNS, Caddy, the BBS systemd unit, firewall, users), the config file (`deploy.env`), manual rollback and host-key backup are all in [DEPLOY.md](./DEPLOY.md). The engine builds to a static `dist/` plus a Go binary, so it is not tied to any host, but only the server path is documented and supported.
 
 ---
 
 ## Domain and DNS
 
-Two files contain the site URL:
+The public URL comes from one setting, `TERMINULL_SITE_URL` (in `deploy.env` for publishing, or in the environment for a local build). It is used by:
 
-| File                   | Line | Value                                        |
-|------------------------|------|----------------------------------------------|
-| `astro.config.mjs`    | 40   | `site: 'https://terminull.pages.dev'`        |
-| `public/robots.txt`   | 4    | `Sitemap: https://terminull.pages.dev/sitemap-index.xml` |
+- Astro's `site`, hence canonical URLs (`src/components/Seo.astro`), Open Graph `og:url` and the sitemap (`/sitemap-index.xml`)
+- the footer of the `.txt` endpoints
+- the zine back cover
+- the BBS (`--site-url` / `TERMINULL_SITE_URL`)
 
-The `site` value in `astro.config.mjs` affects:
+Without it, a neutral development default is used (`src/lib/site-url.js`). DNS itself is an `A`/`AAAA` record at your DNS provider; see [DEPLOY.md](./DEPLOY.md).
 
-- Canonical URLs generated by `src/components/Seo.astro:10`
-- Open Graph `og:url` tags
-- Sitemap URLs (auto-generated by Astro at `/sitemap-index.xml`)
+`public/robots.txt` is a static file and still contains a `Sitemap:` line with a fixed URL. Edit it to match your `TERMINULL_SITE_URL`.
 
 ### Changing the Domain
 
-1. Update `site` in `astro.config.mjs:40`
-2. Update the sitemap URL in `public/robots.txt:4`
-3. Rebuild and deploy
-
-Both files must match. If they diverge, canonical URLs and the robots.txt
-sitemap pointer will point to different domains.
+1. Update `TERMINULL_SITE_URL` and `DEPLOY_HOST` in `deploy.env`
+2. Update the `Sitemap:` line in `public/robots.txt`
+3. Update the hostname in the server's `/etc/caddy/Caddyfile` and the DNS record
+4. `npm run publish`
 
 ---
 
@@ -280,11 +170,10 @@ every build.
 User-agent: *
 Allow: /
 
-Sitemap: https://terminull.pages.dev/sitemap-index.xml
+Sitemap: https://terminull.example.com/sitemap-index.xml
 ```
 
-Allows all crawlers. The sitemap URL must match the `site` value in
-`astro.config.mjs`.
+Allows all crawlers. The sitemap URL must match `TERMINULL_SITE_URL`.
 
 ### Not Implemented
 
@@ -329,64 +218,25 @@ has a significantly larger attack surface than the static site.
 | Content dir escape  | Symlinks resolved via `filepath.EvalSymlinks`; files resolving outside the content directory are rejected. |
 | Large file OOM      | Files >1MB skipped by the content loader (`maxFileSize = 1 << 20`). |
 
-**Firewall**: Only expose port 2222/tcp (or your configured SSH port). The
-server does not need any other inbound ports.
+**Firewall**: expose only the BBS port (22 on the server; `BBS_PORT`), 80 and 443 for Caddy, and the admin sshd port. See [DEPLOY.md](./DEPLOY.md).
 
-**Host key**: Auto-generated on first run at `./ssh_host_ed25519_key`. Back
-up this file -- changing it will cause SSH client warnings for returning users.
-Override with `--host-key` flag or `TERMINULL_HOST_KEY` env var.
+**Host key**: the BBS generates it on first start. On the server it lives at `/srv/terminull/shared/ssh_host_ed25519_key`, outside the release directories so it survives publishes. Back it up (see [DEPLOY.md](./DEPLOY.md)): changing it causes SSH client warnings for returning users. Override with `--host-key` or `TERMINULL_HOST_KEY`.
 
 ### SSH BBS Deployment
 
-The SSH server is a long-running Go process. It cannot run on static hosts.
+The SSH server is a long-running Go process. `npm run publish` builds it as a static Linux binary, uploads it with each release, and restarts the `terminull-bbs` systemd unit. The unit ([`deploy/terminull-bbs.service`](../deploy/terminull-bbs.service)) runs it as the unprivileged `terminull` user on port 22 through `CAP_NET_BIND_SERVICE`, with this hardening:
 
-**systemd (VPS)**:
+| Setting | Effect |
+|---------|--------|
+| `NoNewPrivileges=true` | the process cannot gain privileges |
+| `ProtectSystem=strict` | the filesystem is read-only except `ReadWritePaths` |
+| `ProtectHome=true` | `/home` is not visible |
+| `PrivateTmp=true` | private `/tmp` |
+| `ReadWritePaths=/srv/terminull/shared` | only the host key directory is writable |
+| `CapabilityBoundingSet=CAP_NET_BIND_SERVICE` | no other capability, even if the process is compromised |
+| `MemoryMax=512M` | bounds a memory-exhaustion bug: systemd restarts the service instead of the host swapping |
 
-```ini
-[Unit]
-Description=terminull SSH BBS
-After=network.target
-
-[Service]
-Type=simple
-User=terminull
-WorkingDirectory=/opt/terminull/ssh
-ExecStart=/opt/terminull/ssh/terminull-ssh --port 2222 --content-dir /opt/terminull/src/content
-Restart=on-failure
-RestartSec=5
-# Hardening
-NoNewPrivileges=true
-ProtectSystem=strict
-ProtectHome=true
-PrivateTmp=true
-ReadWritePaths=/opt/terminull/ssh
-MemoryMax=512M
-
-[Install]
-WantedBy=multi-user.target
-```
-
-`ReadWritePaths` covers the host key, which is generated in the working
-directory on first run. `MemoryMax` bounds the damage of any memory-exhaustion
-bug: systemd restarts the service instead of the host swapping.
-
-**Docker**:
-
-```dockerfile
-FROM golang:1.26 AS build
-WORKDIR /app
-COPY ssh/ .
-RUN go build -o terminull-ssh .
-
-FROM debian:bookworm-slim
-COPY --from=build /app/terminull-ssh /usr/local/bin/
-COPY src/content /content
-EXPOSE 2222
-CMD ["terminull-ssh", "--content-dir", "/content"]
-```
-
-**Fly.io**: Supports TCP services natively. Expose port 2222 in `fly.toml`
-with `[[services]]` type `tcp`. Free tier may suffice for low traffic.
+Its configuration is the `bbs.env` file that publish writes into each release (site URL, port, content and volumes paths, host key path). For running the BBS locally, see [DEVELOPMENT.md](./DEVELOPMENT.md).
 
 ### External Requests
 
@@ -412,17 +262,17 @@ monitoring. The footer says "no tracking" and means it.
 
 ### Verify the Site Is Live
 
-Check the deployment URL directly. For GitHub Pages, this is typically
-`https://{username}.github.io/{repo}/` or a custom domain.
+`npm run publish` verifies HTTPS and the SSH banner itself after every switch. To check by hand:
+
+```bash
+curl -I https://terminull.example.com/
+ssh terminull.example.com
+ssh -p 2200 deploy@terminull.example.com cat /srv/terminull/current/RELEASE   # what is live
+```
 
 ### Verify Build Health
 
-Check the GitHub Actions run status at:
-```
-https://github.com/{owner}/{repo}/actions
-```
-
-A failed build prevents deployment -- the previous version stays live.
+`npm run build` and `npm test` locally. A failed publish never leaves a half-uploaded site live: the previous release stays in place (or is restored).
 
 ### Verify Content
 
@@ -439,38 +289,28 @@ curl -s https://your-site.example/search-index.json | python3 -m json.tool | hea
 
 ### Source of Truth
 
-All content is in git. The repository is the single source of truth.
-
-`dist/` is generated output and should not be committed (it's in `.gitignore`).
+Two git repos: the public engine repo, and your private content repo (the `vol*/` folders, cloned at `src/content/volumes/`). Publishing requires the content repo to be committed and pushed, so what is live is always backed up. `dist/` and `public/zine/` are generated output and gitignored.
 
 ### Full Restore
 
 ```bash
-git clone https://github.com/{owner}/terminull.git
+git clone <engine-repo-url> terminull
 cd terminull
+git clone <private-content-repo-url> src/content/volumes
 npm ci
-npm run build
-# dist/ now contains the full site, ready to deploy
+cp deploy.env.example deploy.env   # fill in
+npm run publish
 ```
 
 ### Rollback a Deploy
 
-If a bad deploy goes out:
-
-1. Revert the commit on `main`:
-   ```bash
-   git revert HEAD
-   git push
-   ```
-2. The pipeline re-triggers and deploys the reverted state.
-
-Alternatively, use the GitHub Actions UI to re-run a previous successful
-workflow.
+Publish rolls back by itself if its verification fails. To return to an older release by hand, see "Manual rollback" in [DEPLOY.md](./DEPLOY.md). Alternatively, revert the content commit, push it, and publish again.
 
 ### What's Not in Git
 
-- GitHub Actions secrets (API tokens, deployment credentials)
+- `deploy.env` (your host and site URL)
+- the BBS host key on the server (`/srv/terminull/shared/ssh_host_ed25519_key`)
 - DNS configuration (managed at your registrar or DNS provider)
-- GitHub repo settings (Pages source, branch protection rules)
+- the server itself: users, firewall, Caddy and systemd configuration (rebuilt from [DEPLOY.md](./DEPLOY.md))
 
 Document these separately if you have co-administrators.

@@ -114,11 +114,17 @@ getCollection('issues', ({ data }) => !data.draft)
 There is no partial publishing. An article is either fully visible (in routes,
 TOC, search, and text endpoints) or fully hidden. No middle state.
 
-### Deploy
+### Publish
 
-Merge to `main` and push. The GitHub Actions pipeline
-(`.github/workflows/deploy.yml`) handles the rest: build, upload artifact,
-deploy to GitHub Pages.
+Articles live in the private content repo at `src/content/volumes/`. Publishing
+is two steps:
+
+1. Commit and push the content repo (`cd src/content/volumes && git add -A &&
+   git commit && git push`). Publish refuses to run while it has uncommitted or
+   unpushed changes.
+2. From the engine repo, run `npm run publish`. It builds, uploads, switches
+   the live site and BBS to the new release and verifies it. See
+   [DEPLOY.md](./DEPLOY.md) for setup and rollback.
 
 ---
 
@@ -155,24 +161,21 @@ verify uniqueness manually.
 
 ### Step by Step
 
-1. **Create the directory:**
+1. **Create the directory** in the content repo:
    ```
-   src/content/issues/vol{N}/
+   src/content/volumes/vol{N}/
    ```
+   (Template articles to copy are in `src/content/templates/`.)
 
-2. **Update the volumes array** in `src/pages/vol/index.astro`:
-   ```typescript
-   const volumes = [
-     { label: 'Volume 1', href: '/vol/1', description: 'June 2025 -- Inaugural Issue' },
-   ];
-   ```
+2. **Nothing to register.** The Archive page (`/vol`) lists volumes
+   automatically from the articles it finds.
 
 3. **Add a `Latest Issue` menu item** to `src/pages/index.astro` if desired:
    ```typescript
    { label: 'Latest Issue', href: '/vol/1', description: 'Volume 1 -- June 2025' },
    ```
 
-4. **Add articles** to the new directory with matching `volume` frontmatter.
+4. **Add articles** to the new directory with matching `volume` frontmatter, then commit, push and publish (see above).
 
 ### What Auto-Generates
 
