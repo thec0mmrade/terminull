@@ -55,11 +55,22 @@
   register: running_kernel
   changed_when: false
 
-- name: Require a running kernel at or above the minimum
+- name: Compare the running kernel with the minimum after any reboot
   ansible.builtin.command: dpkg --compare-versions "{{ running_kernel.stdout }}" ge "{{ kernel_min }}"
   register: kernel_check
   changed_when: false
-  failed_when: kernel_check.rc != 0 or running_kernel.stdout | length == 0
+  failed_when: false
+
+- name: Require a running kernel at or above the minimum
+  ansible.builtin.assert:
+    that:
+      - running_kernel.stdout | length > 0
+      - kernel_check.rc == 0
+    fail_msg: >-
+      Running kernel {{ running_kernel.stdout | default('unknown', true) }} is older than
+      {{ kernel_min }}, the minimum that fixes CVE-2026-98432, even after upgrading and
+      rebooting. Refusing to continue.
+    success_msg: "Running kernel {{ running_kernel.stdout }} >= {{ kernel_min }}"
 
 - name: Turn on automatic updates
   ansible.builtin.template:

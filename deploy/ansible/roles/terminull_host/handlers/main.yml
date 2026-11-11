@@ -18,7 +18,11 @@
   changed_when: true
 
 # The BBS only runs after the first publish, and try-restart leaves a stopped
-# service stopped; the systemd module has no equivalent.
+# service stopped; the systemd module has no equivalent. This can fire before
+# the unit is installed (handlers are flushed when sshd moves), and systemctl
+# exits 5 for a unit it doesn't know: nothing to restart then.
 - name: Restart the BBS if it is running
   ansible.builtin.command: systemctl try-restart terminull-bbs # noqa: command-instead-of-module
-  changed_when: true
+  register: bbs_restart
+  changed_when: bbs_restart.rc == 0
+  failed_when: bbs_restart.rc not in [0, 5]
