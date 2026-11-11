@@ -1,0 +1,37 @@
+---
+# Turns a fresh Debian 13 server into a terminull host: the steps of
+# docs/DEPLOY.md, safe to re-run. Usage (see docs/DEPLOY.md):
+#
+#   ansible-playbook -i inventory.ini -e @vars.yml deploy/ansible/site.yml
+#
+# The first run connects as root on port 22. The play moves the admin sshd to
+# admin_ssh_port; after that every run connects as admin on that port, and
+# port 22 belongs to the BBS.
+
+- name: Pick how to connect
+  hosts: terminull
+  gather_facts: false
+  tasks:
+    - name: Check whether the admin sshd already listens on the admin port
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host | default(inventory_hostname) }}"
+        port: "{{ admin_ssh_port | default(2200) }}"
+        search_regex: "^SSH-"
+        timeout: 5
+      delegate_to: localhost
+      register: admin_port_probe
+      ignore_errors: true
+
+    # Once the admin port answers, never fall back to 22: that is the BBS.
+    - name: Connect as admin on the admin port, or as root on 22 for a fresh server
+      ansible.builtin.set_fact:
+        ansible_port: "{{ (admin_port_probe is succeeded) | ternary(admin_ssh_port | default(2200), 22) }}"
+        ansible_user: "{{ (admin_port_probe is succeeded) | ternary('admin', 'root') }}"
+        ansible_become: "{{ admin_port_probe is succeeded }}"
+        fresh_server: "{{ admin_port_probe is failed }}"
+
+- name: Configure the terminull host
+  hosts: terminull
+  gather_facts: false
+  roles:
+    - terminull_host

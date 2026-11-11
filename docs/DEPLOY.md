@@ -1,6 +1,6 @@
 # Deploying to a server
 
-One-time server setup, then one command (`npm run publish`) to put the site, the zine PDFs and the SSH BBS live. Any Debian or Ubuntu VPS works; nothing in the engine depends on a particular hosting provider.
+One-time server setup, then one command (`npm run publish`) to put the site, the zine PDFs and the SSH BBS live. Any Debian 13 VPS works; nothing in the engine depends on a particular hosting provider. The server setup is automated by an Ansible playbook (see [Setup with the playbook](#setup-with-the-playbook)); the numbered steps below are the same work done by hand.
 
 See also: [ADMIN.md](./ADMIN.md) | [EDITING.md](./EDITING.md) | [DEVELOPMENT.md](./DEVELOPMENT.md)
 
@@ -23,15 +23,47 @@ All examples use placeholders. Substitute your own:
 
 Nothing here is committed to git: the hostname lives in your local `deploy.env`.
 
-## 1. Create the server
+## Setup with the playbook
 
-1. Create a server: smallest size, Debian 13 or Ubuntu 24.04 LTS, and add your SSH public key during creation. (IPv6 is optional.)
-2. Log in as root once: `ssh root@203.0.113.10`.
-3. Update, and install rsync (publish uploads with it, so it must exist on the server):
+`deploy/ansible/` holds a playbook that does steps 3 to 6 below (and the package and kernel part of step 1) for you, and is safe to re-run. You still create the server and the DNS record yourself (steps 1 and 2), then:
 
 ```bash
-apt update && apt upgrade -y
+cd deploy/ansible
+ansible-galaxy collection install -r requirements.yml
+cp inventory.example.ini inventory.ini   # your hostname and the server's IP
+cp vars.example.yml vars.yml             # your hostname and SSH public key
+ansible-playbook -i inventory.ini -e @vars.yml site.yml
+```
+
+`inventory.ini` and `vars.yml` are gitignored. Every setting is described in `roles/terminull_host/defaults/main.yml`.
+
+What it does:
+
+- Waits for the server's first-boot setup, upgrades every package, reboots into the new kernel, and **refuses to continue unless the running kernel fixes CVE-2026-98432** (Debian 13: `6.12.113-1` or later). Other releases fail closed until you set `min_kernel_version` for them.
+- Turns on unattended upgrades, with an automatic reboot at 04:00 when an update needs one.
+- Creates `admin` (key-only login, passwordless sudo), `deploy` and `terminull`, and the directories in step 4.
+- Sets up `ufw`, moves the admin sshd to port 2200, then proves a fresh `admin` login on 2200 works before finishing.
+- Installs Caddy, the Caddyfile, the BBS service and the `deploy` sudo rule.
+- With `bbs_host_key_src` set, restores a backed-up BBS host key (see [Backing up the BBS host key](#backing-up-the-bbs-host-key)).
+
+The first run logs in as `root` on port 22. Every later run logs in as `admin` on 2200; the playbook picks by itself. When it finishes, continue at [step 7](#7-laptop-the-content-repo).
+
+## 1. Create the server
+
+1. Create a server: smallest size, Debian 13, and add your SSH public key during creation. (IPv6 is optional.)
+2. Log in as root once: `ssh root@203.0.113.10`.
+3. Update, install rsync (publish uploads with it, so it must exist on the server), and reboot into the new kernel:
+
+```bash
+apt update && apt full-upgrade -y
 apt install -y rsync
+reboot
+```
+
+4. Check the running kernel fixes CVE-2026-98432, a remote bug reachable through any open TCP port. `uname -v` must show Debian `6.12.113-1` or later:
+
+```bash
+uname -v    # e.g. "... Debian 6.12.116-1 (...)"
 ```
 
 ## 2. DNS
@@ -251,6 +283,8 @@ chmod 600 ssh_host_ed25519_key.backup
 
 Store the copy somewhere private (password manager or encrypted backup), never in git. To restore, put it back at the same path, owned by `terminull`, mode 0600, and restart `terminull-bbs`.
 
+With the playbook, set `bbs_host_key_src` to the backup's path on your laptop instead. It installs the key before the BBS first starts, so a rebuilt server keeps the same identity. You can also make the key yourself before the first publish (`ssh-keygen -t ed25519 -N '' -f ssh_host_ed25519_key`) and keep only that copy's backup.
+
 ## Troubleshooting
 
 | Symptom | Check |
@@ -261,3 +295,5 @@ Store the copy somewhere private (password manager or encrypted backup), never i
 | BBS does not start | `journalctl -u terminull-bbs -n 50`. Check `current` exists, `bbs.env` is readable, and `shared/` is owned by `terminull`. |
 | HTTPS check fails on first publish | DNS not pointing at the server yet, or port 80/443 closed, so Caddy has no certificate. `journalctl -u caddy`. |
 | `ssh terminull.example.com` shows the server's login instead of the BBS | sshd is still on port 22 (step 3, Ubuntu socket note). |
+| Playbook stops at "Require a running kernel at or above the minimum" | The server is not running a kernel that fixes CVE-2026-98432. `apt full-upgrade`, reboot, check `uname -v`; on a release the playbook doesn't know, set `min_kernel_version`. |
+| Playbook cannot connect | First run needs `root` login on port 22 with your key; later runs need `admin` on 2200. Check `ansible_host` in `inventory.ini`. |

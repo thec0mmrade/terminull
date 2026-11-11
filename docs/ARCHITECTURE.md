@@ -849,7 +849,7 @@ scripts/
 ├── publish.js                  # One-command deploy (see DEPLOY.md)
 └── publish/                    # Config, preflight, remote, verify helpers
 
-deploy/                         # Server templates: systemd unit, Caddyfile, sudoers
+deploy/                         # Server setup playbook (ansible/), templates: systemd unit, Caddyfile, sudoers
 
 src/
 ├── assets/styles/

@@ -1,0 +1,29 @@
+---
+# Override any of these in your inventory or with -e @vars.yml.
+
+# Public hostname Caddy serves (and gets an HTTPS certificate for).
+site_hostname: terminull.example.com
+
+# Port the server's own (admin) sshd moves to, so the BBS can own bbs_port.
+admin_ssh_port: 2200
+bbs_port: 22
+
+# Must match DEPLOY_PATH in deploy.env.
+deploy_path: /srv/terminull
+
+# Public keys (one string each) allowed to log in as admin and as deploy.
+admin_authorized_keys: []
+deploy_authorized_keys: "{{ admin_authorized_keys }}"
+
+# Optional: path on your laptop of a backed-up BBS host key to restore, so
+# returning visitors see no "host key changed" warning after a rebuild.
+bbs_host_key_src: ""
+
+# Lowest acceptable running kernel per release, as the Debian package version
+# shown by `uname -v`. Debian 13: 6.12.113-1 fixes CVE-2026-98432 (DSA-6568-1).
+# Releases not listed fail closed unless you set min_kernel_version yourself.
+kernel_minimums:
+  Debian-13: "6.12.113-1"
+
+# Unattended upgrades reboot at this time when an update needs it.
+auto_reboot_time: "04:00"

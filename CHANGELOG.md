@@ -8,6 +8,13 @@ entries are grouped by date. The format follows
 
 ### Added
 
+- **Server setup playbook.** `deploy/ansible/` configures a fresh Debian 13
+  server end to end and is safe to re-run: packages, users, firewall, admin
+  sshd on port 2200, Caddy, the BBS service and its sudo rule, and optionally
+  a restored BBS host key. See `docs/DEPLOY.md`.
+- The playbook upgrades and reboots into a patched kernel and refuses to
+  continue on one vulnerable to CVE-2026-98432 (Debian 13: below
+  `6.12.113-1`). Unattended upgrades now reboot at 04:00 when needed.
 - **ANSI art articles.** Drop a classic `.ANS` file into a volume folder,
   named like an article (`11-xibalba.ans`), and it becomes one. Title, artist,
   group and date are read from the file's SAUCE record.

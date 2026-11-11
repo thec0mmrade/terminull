@@ -1,0 +1,3 @@
+# {{ ansible_managed }}
+# Lets the deploy user restart the BBS after switching releases, and nothing else.
+deploy ALL=(root) NOPASSWD: /usr/bin/systemctl restart terminull-bbs

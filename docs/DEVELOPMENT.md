@@ -100,7 +100,7 @@ terminull/
 │   ├── export-zine.js          # Print zine PDF exporter
 │   ├── publish.js              # One-command deploy (npm run publish)
 │   └── publish/                # Config, preflight, remote and verify helpers
-├── deploy/                     # Server templates (systemd, Caddy, sudoers)
+├── deploy/                     # Server setup playbook (ansible/) and templates
 └── docs/                       # Documentation (you are here)
 ```
 

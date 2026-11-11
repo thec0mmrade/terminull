@@ -1,0 +1,5 @@
+---
+# Role variables (site_hostname, deploy_path, ...) are its documented interface,
+# so they are not prefixed with the role name.
+skip_list:
+  - var-naming[no-role-prefix]

@@ -1,0 +1,56 @@
+---
+- name: Create the apt keyrings directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+
+- name: Add Caddy's signing key
+  ansible.builtin.get_url:
+    url: https://dl.cloudsmith.io/public/caddy/stable/gpg.key
+    dest: /etc/apt/keyrings/caddy-stable.asc
+    mode: "0644"
+
+- name: Add Caddy's apt repository
+  ansible.builtin.copy:
+    content: |
+      deb [signed-by=/etc/apt/keyrings/caddy-stable.asc] https://dl.cloudsmith.io/public/caddy/stable/deb/debian any-version main
+    dest: /etc/apt/sources.list.d/caddy-stable.list
+    mode: "0644"
+  register: caddy_repo
+
+- name: Install Caddy
+  ansible.builtin.apt:
+    name: caddy
+    update_cache: "{{ caddy_repo is changed }}"
+    lock_timeout: 300
+
+- name: Install the Caddyfile
+  ansible.builtin.template:
+    src: Caddyfile.j2
+    dest: /etc/caddy/Caddyfile
+    mode: "0644"
+  notify: Reload caddy
+
+- name: Install the BBS service
+  ansible.builtin.template:
+    src: terminull-bbs.service.j2
+    dest: /etc/systemd/system/terminull-bbs.service
+    mode: "0644"
+  notify: Restart the BBS if it is running
+
+# Enabled, not started: it has nothing to run until the first publish.
+- name: Enable the BBS service
+  ansible.builtin.systemd_service:
+    name: terminull-bbs
+    enabled: true
+    daemon_reload: true
+
+- name: Let deploy restart the BBS, and nothing else
+  ansible.builtin.template:
+    src: sudoers-deploy.j2
+    dest: /etc/sudoers.d/terminull-deploy
+    owner: root
+    group: root
+    mode: "0440"
+    validate: visudo -cf %s

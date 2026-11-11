@@ -1,0 +1,27 @@
+---
+# The allow rules go in before the firewall is enabled, so the current ssh
+# session (port 22 on a fresh server, the admin port afterwards) survives.
+- name: Allow admin ssh, the BBS, HTTP and HTTPS
+  community.general.ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+  loop:
+    - "{{ admin_ssh_port | string }}"
+    - "{{ bbs_port | string }}"
+    - "80"
+    - "443"
+
+- name: Deny other incoming traffic
+  community.general.ufw:
+    default: deny
+    direction: incoming
+
+- name: Allow outgoing traffic
+  community.general.ufw:
+    default: allow
+    direction: outgoing
+
+- name: Enable the firewall
+  community.general.ufw:
+    state: enabled

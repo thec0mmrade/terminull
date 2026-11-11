@@ -1,0 +1,4 @@
+// {{ ansible_managed }}
+// Kernel security fixes only take effect after a reboot.
+Unattended-Upgrade::Automatic-Reboot "true";
+Unattended-Upgrade::Automatic-Reboot-Time "{{ auto_reboot_time }}";

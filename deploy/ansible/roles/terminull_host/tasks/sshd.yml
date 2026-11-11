@@ -1,0 +1,63 @@
+---
+# Port directives add up across files, so the main config must set none, or
+# sshd would keep port 22 and the BBS could not bind it.
+- name: Check the main sshd_config sets no Port
+  ansible.builtin.command: grep -E '^[[:space:]]*Port[[:space:]]' /etc/ssh/sshd_config
+  register: main_port
+  changed_when: false
+  failed_when: main_port.rc == 0
+
+- name: Ubuntu - run sshd as a plain service so it honours Port
+  when: ansible_distribution == 'Ubuntu'
+  block:
+    - name: Disable ssh.socket
+      ansible.builtin.systemd_service:
+        name: ssh.socket
+        enabled: false
+        state: stopped
+    - name: Enable ssh.service
+      ansible.builtin.systemd_service:
+        name: ssh.service
+        enabled: true
+
+# 10- sorts before cloud images' own drop-ins (e.g. 50-cloud-init.conf), and
+# for most settings sshd keeps the first value it reads.
+- name: Install the admin sshd settings
+  ansible.builtin.template:
+    src: sshd-admin.conf.j2
+    dest: /etc/ssh/sshd_config.d/10-admin.conf
+    mode: "0644"
+  notify: Restart sshd
+
+- name: Test the full sshd configuration
+  ansible.builtin.command: sshd -t
+  register: sshd_test
+  changed_when: false
+  failed_when: false
+
+- name: Back out settings sshd rejects
+  when: sshd_test.rc != 0
+  block:
+    - name: Remove the admin sshd settings
+      ansible.builtin.file:
+        path: /etc/ssh/sshd_config.d/10-admin.conf
+        state: absent
+    - name: Stop here
+      ansible.builtin.fail:
+        msg: "sshd -t rejected the config: {{ sshd_test.stderr }}"
+
+- name: Restart sshd now if its settings changed
+  ansible.builtin.meta: flush_handlers
+
+- name: Switch to admin on the admin port
+  ansible.builtin.set_fact:
+    ansible_port: "{{ admin_ssh_port }}"
+    ansible_user: admin
+    ansible_become: true
+
+- name: Drop the old connection
+  ansible.builtin.meta: reset_connection
+
+- name: Prove a fresh admin login with sudo works
+  ansible.builtin.command: "true"
+  changed_when: false

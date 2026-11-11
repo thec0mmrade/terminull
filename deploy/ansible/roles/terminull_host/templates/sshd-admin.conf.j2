@@ -1,0 +1,6 @@
+# {{ ansible_managed }}
+# The admin sshd moves off port 22 so the BBS can have it.
+Port {{ admin_ssh_port }}
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PermitRootLogin no

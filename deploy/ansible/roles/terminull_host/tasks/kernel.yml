@@ -1,0 +1,74 @@
+---
+- name: Upgrade all packages, including the kernel
+  ansible.builtin.apt:
+    update_cache: true
+    upgrade: dist
+    lock_timeout: 300
+
+- name: Install base packages
+  ansible.builtin.apt:
+    name: [rsync, ufw, unattended-upgrades, curl, gpg, sudo]
+    state: present
+    lock_timeout: 300
+
+- name: Pick the minimum kernel for this release
+  ansible.builtin.set_fact:
+    kernel_min: >-
+      {{ min_kernel_version | default(kernel_minimums[ansible_distribution ~ '-' ~ ansible_distribution_major_version]
+      | default('')) }}
+
+- name: Fail closed on a release with no known patched kernel
+  ansible.builtin.assert:
+    that: kernel_min | length > 0
+    fail_msg: >-
+      No known kernel fixing CVE-2026-98432 for {{ ansible_distribution }}
+      {{ ansible_distribution_major_version }}. Set min_kernel_version once your
+      distribution ships one.
+
+- name: Read the running kernel's package version
+  ansible.builtin.shell: set -o pipefail; uname -v | sed -n 's/.*Debian \([^ ]*\).*/\1/p'
+  args:
+    executable: /bin/bash
+  register: running_kernel
+  changed_when: false
+
+- name: Check whether a reboot is pending
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+  register: reboot_required
+
+- name: Compare the running kernel with the minimum
+  ansible.builtin.command: dpkg --compare-versions "{{ running_kernel.stdout }}" ge "{{ kernel_min }}"
+  register: kernel_ok
+  changed_when: false
+  failed_when: false
+
+- name: Reboot into the upgraded kernel
+  ansible.builtin.reboot:
+    reboot_timeout: 600
+  when: reboot_required.stat.exists or kernel_ok.rc != 0
+
+- name: Read the running kernel's package version after any reboot
+  ansible.builtin.shell: set -o pipefail; uname -v | sed -n 's/.*Debian \([^ ]*\).*/\1/p'
+  args:
+    executable: /bin/bash
+  register: running_kernel
+  changed_when: false
+
+- name: Require a running kernel at or above the minimum
+  ansible.builtin.command: dpkg --compare-versions "{{ running_kernel.stdout }}" ge "{{ kernel_min }}"
+  register: kernel_check
+  changed_when: false
+  failed_when: kernel_check.rc != 0 or running_kernel.stdout | length == 0
+
+- name: Turn on automatic updates
+  ansible.builtin.template:
+    src: 20auto-upgrades.j2
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    mode: "0644"
+
+- name: Reboot automatically when an update needs it
+  ansible.builtin.template:
+    src: 52terminull-reboot.j2
+    dest: /etc/apt/apt.conf.d/52terminull-reboot
+    mode: "0644"

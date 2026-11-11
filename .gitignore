@@ -42,3 +42,8 @@ public/zine/
 
 # deploy settings (local only)
 deploy.env
+
+# deploy settings and inventories for real servers (local only)
+deploy.*.env
+deploy/ansible/inventory.ini
+deploy/ansible/vars.yml

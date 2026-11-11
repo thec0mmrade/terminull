@@ -1,0 +1,33 @@
+---
+- name: Wait for cloud-init to finish on a fresh server
+  ansible.builtin.raw: cloud-init status --wait >/dev/null 2>&1 || true
+  changed_when: false
+  when: fresh_server | default(false) | bool
+
+- name: Gather facts
+  ansible.builtin.setup:
+
+- name: Refuse anything but Debian or Ubuntu
+  ansible.builtin.assert:
+    that: ansible_distribution in ['Debian', 'Ubuntu']
+    fail_msg: "Unsupported distribution {{ ansible_distribution }}; use Debian 13."
+
+- name: Require admin_authorized_keys
+  ansible.builtin.assert:
+    that: admin_authorized_keys | length > 0
+    fail_msg: Set admin_authorized_keys, or the admin account would be unreachable.
+
+- name: Packages and a patched kernel
+  ansible.builtin.import_tasks: kernel.yml
+
+- name: Accounts, directories and the BBS host key
+  ansible.builtin.import_tasks: accounts.yml
+
+- name: Firewall
+  ansible.builtin.import_tasks: firewall.yml
+
+- name: Move the admin sshd off port 22
+  ansible.builtin.import_tasks: sshd.yml
+
+- name: Caddy, the BBS service and the deploy sudo rule
+  ansible.builtin.import_tasks: services.yml

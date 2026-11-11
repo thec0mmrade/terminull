@@ -1,0 +1,75 @@
+---
+- name: Create the admin account
+  ansible.builtin.user:
+    name: admin
+    groups: sudo
+    append: true
+    shell: /bin/bash
+
+- name: Authorize admin's keys
+  ansible.posix.authorized_key:
+    user: admin
+    key: "{{ admin_authorized_keys | join('\n') }}"
+    exclusive: true
+
+- name: Let admin use sudo without a password (login is key-only)
+  ansible.builtin.copy:
+    content: "admin ALL=(ALL:ALL) NOPASSWD: ALL\n"
+    dest: /etc/sudoers.d/10-admin
+    owner: root
+    group: root
+    mode: "0440"
+    validate: visudo -cf %s
+
+- name: Create the deploy account
+  ansible.builtin.user:
+    name: deploy
+    shell: /bin/bash
+
+- name: Authorize deploy's keys
+  ansible.posix.authorized_key:
+    user: deploy
+    key: "{{ deploy_authorized_keys | join('\n') }}"
+    exclusive: true
+
+- name: Create the terminull system account
+  ansible.builtin.user:
+    name: terminull
+    system: true
+    shell: /usr/sbin/nologin
+    create_home: false
+
+# Releases are world-readable so the terminull user and Caddy can read them.
+# Never create "current" here: publish makes it a relative symlink.
+- name: Create the release directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: deploy
+    group: deploy
+    mode: "0755"
+  loop:
+    - "{{ deploy_path }}"
+    - "{{ deploy_path }}/releases"
+
+- name: Create the BBS's private directory
+  ansible.builtin.file:
+    path: "{{ deploy_path }}/shared"
+    state: directory
+    owner: terminull
+    group: terminull
+    mode: "0700"
+
+- name: Restore the BBS host key
+  when: bbs_host_key_src | length > 0
+  block:
+    - name: Install the host key
+      ansible.builtin.copy:
+        src: "{{ bbs_host_key_src }}"
+        dest: "{{ deploy_path }}/shared/ssh_host_ed25519_key"
+        owner: terminull
+        group: terminull
+        mode: "0600"
+      notify:
+        - Derive the public host key
+        - Restart the BBS if it is running

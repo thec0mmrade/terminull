@@ -1,0 +1,8 @@
+# Copy to vars.yml (gitignored) and fill in. Every setting is described in
+# roles/terminull_host/defaults/main.yml.
+site_hostname: terminull.example.com
+admin_authorized_keys:
+  - "ssh-ed25519 AAAA...your-public-key... you@laptop"
+# admin_ssh_port: 2200
+# deploy_path: /srv/terminull
+# bbs_host_key_src: /path/to/backed-up/ssh_host_ed25519_key

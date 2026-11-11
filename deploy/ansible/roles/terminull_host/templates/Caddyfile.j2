@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+{{ site_hostname }} {
+	root * {{ deploy_path }}/current/site
+	file_server
+	encode gzip
+
+	# No custom 404 page: the build produces no 404.html, so Caddy's default is used.
+
+	# So `curl https://{{ site_hostname }}/index.txt | less -R` works.
+	@txt path *.txt
+	header @txt Content-Type "text/plain; charset=utf-8"
+}

@@ -1,0 +1,24 @@
+---
+- name: Restart sshd
+  ansible.builtin.systemd_service:
+    name: ssh
+    state: restarted
+
+- name: Reload caddy
+  ansible.builtin.systemd_service:
+    name: caddy
+    state: reloaded
+
+- name: Derive the public host key
+  ansible.builtin.shell: >-
+    ssh-keygen -y -f {{ deploy_path }}/shared/ssh_host_ed25519_key
+    > {{ deploy_path }}/shared/ssh_host_ed25519_key.pub &&
+    chown terminull:terminull {{ deploy_path }}/shared/ssh_host_ed25519_key.pub &&
+    chmod 0644 {{ deploy_path }}/shared/ssh_host_ed25519_key.pub
+  changed_when: true
+
+# The BBS only runs after the first publish, and try-restart leaves a stopped
+# service stopped; the systemd module has no equivalent.
+- name: Restart the BBS if it is running
+  ansible.builtin.command: systemctl try-restart terminull-bbs # noqa: command-instead-of-module
+  changed_when: true
