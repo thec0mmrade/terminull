@@ -83,3 +83,29 @@ test('checkConfigUntracked passes when untracked', () => {
   fs.writeFileSync(path.join(dir, 'deploy.env'), 'X=1\n');
   assert.doesNotThrow(() => checkConfigUntracked(dir));
 });
+
+test('checkConfigUntracked checks a custom config path inside the repo', () => {
+  const dir = tmp();
+  initRepo(dir);
+  fs.writeFileSync(path.join(dir, 'other.env'), 'X=1\n');
+  git(dir, 'add', '-f', 'other.env');
+  assert.throws(() => checkConfigUntracked(dir, 'other.env'), /other\.env/);
+});
+
+test('checkConfigUntracked skips a config path outside the repo', () => {
+  const dir = tmp();
+  initRepo(dir);
+  const outside = path.join(tmp(), 'deploy.env');
+  fs.writeFileSync(outside, 'X=1\n');
+  assert.doesNotThrow(() => checkConfigUntracked(dir, outside));
+});
+
+test('checkConfigUntracked fails loudly when not a git repo', () => {
+  assert.throws(() => checkConfigUntracked(tmp()), /not a git repo/);
+});
+
+test('detached HEAD rejects with a distinct message', async () => {
+  const work = pushedRepo();
+  git(work, 'checkout', '-q', '--detach');
+  await assert.rejects(checkContentRepo(work), /detached HEAD.*git switch/);
+});

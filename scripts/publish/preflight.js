@@ -1,5 +1,6 @@
 // Preflight checks for the publish script.
 import fs from 'node:fs';
+import path from 'node:path';
 import { execFile, execFileSync } from 'node:child_process';
 import { promisify } from 'node:util';
 
@@ -30,6 +31,11 @@ export async function checkContentRepo(dir) {
     throw new Error(`${dir} is not the root of a git repo (found ${top}): point TERMINULL_VOLUMES_DIR at the repo root`);
   }
   try {
+    await git(dir, ['symbolic-ref', '-q', 'HEAD']);
+  } catch {
+    throw new Error(`${dir} has a detached HEAD: run git switch <branch> there before publishing`);
+  }
+  try {
     await git(dir, ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
   } catch {
     throw new Error(`${dir} has no upstream branch: run git push -u origin <branch> there`);
@@ -50,17 +56,27 @@ export async function checkContentRepo(dir) {
 }
 
 /**
- * deploy.env holds the host and must never be committed.
+ * The deploy config holds the host and must never be committed. Skipped when it lies outside the repo.
  * @param {string} repoRoot
+ * @param {string} [configPath]
  */
-export function checkConfigUntracked(repoRoot) {
+export function checkConfigUntracked(repoRoot, configPath = 'deploy.env') {
+  const abs = path.resolve(repoRoot, configPath);
+  const rel = path.relative(path.resolve(repoRoot), abs);
+  if (rel.startsWith('..') || path.isAbsolute(rel)) return;
+  try {
+    execFileSync('git', ['rev-parse', '--git-dir'], { cwd: repoRoot, stdio: 'ignore' });
+  } catch {
+    throw new Error(`cannot check whether ${rel} is tracked: ${repoRoot} is not a git repo or git failed to run`);
+  }
   let tracked = true;
   try {
-    execFileSync('git', ['ls-files', '--error-unmatch', 'deploy.env'], { cwd: repoRoot, stdio: 'ignore' });
-  } catch {
+    execFileSync('git', ['ls-files', '--error-unmatch', '--', rel], { cwd: repoRoot, stdio: 'ignore' });
+  } catch (err) {
+    if (/** @type {NodeJS.ErrnoException} */ (err).code === 'ENOENT') throw new Error('git failed to run');
     tracked = false;
   }
   if (tracked) {
-    throw new Error('deploy.env is tracked by git: run git rm --cached deploy.env and keep it gitignored');
+    throw new Error(`${rel} is tracked by git: run git rm --cached ${rel} and keep it gitignored`);
   }
 }

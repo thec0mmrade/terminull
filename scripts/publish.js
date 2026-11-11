@@ -72,7 +72,7 @@ export async function buildRelease(cfg, stageDir, meta) {
   const volumesOut = path.join(stageDir, 'content/volumes');
   fs.mkdirSync(volumesOut, { recursive: true });
   for (const entry of fs.readdirSync(cfg.volumesDir, { withFileTypes: true })) {
-    if (entry.name.startsWith('.')) continue; // .git and other dot-entries stay behind
+    if (!entry.isDirectory() || !/^vol\d+$/.test(entry.name)) continue; // only volumes; .git stays behind
     fs.cpSync(path.join(cfg.volumesDir, entry.name), path.join(volumesOut, entry.name), { recursive: true });
   }
 
@@ -115,7 +115,7 @@ async function main() {
 
   step(1, 'Loading deploy config…');
   const cfg = loadDeployConfig(opts.config);
-  checkConfigUntracked(ROOT);
+  checkConfigUntracked(ROOT, opts.config);
   console.log(`      target ${cfg.user}@${cfg.host}:${cfg.path}, site ${cfg.siteUrl}`);
 
   step(2, 'Checking content repo…');
