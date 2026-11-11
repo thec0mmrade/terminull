@@ -126,6 +126,24 @@ is two steps:
    the live site and BBS to the new release and verifies it. See
    [DEPLOY.md](./DEPLOY.md) for setup and rollback.
 
+### The print zine
+
+Every publish also exports each volume as two PDFs and puts them on the site.
+Each volume's table of contents links them ("reader PDF", "booklet PDF"):
+
+| File | For |
+|------|-----|
+| `/zine/terminull-vol{N}.pdf` | Reading on screen, or printing one 5.5"×8.5" page per sheet |
+| `/zine/terminull-vol{N}-booklet.pdf` | A folded, stapled zine: two pages per letter sheet, in saddle-stitch order |
+
+To print the booklet: letter paper, landscape, **double-sided, flip on the
+short edge**, at 100% scale (not "fit to page"). Fold the stack in half and
+staple along the fold.
+
+To make the PDFs without publishing, run `npm run zine -- --volume N` (on
+NixOS, inside the Chromium wrapper in [DEVELOPMENT.md](./DEVELOPMENT.md)).
+They land in `public/zine/`.
+
 ---
 
 ## Managing Article Order
