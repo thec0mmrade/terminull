@@ -25,6 +25,18 @@ entries are grouped by date. The format follows
     repositioning are skipped with a warning.
 - Web437 IBM VGA 9x16 font from the Ultimate Oldschool PC Font Pack
   (CC BY-SA 4.0, license included in `public/fonts/`).
+- **`npm run publish`.** One command builds the zine PDFs, the site and a
+  static Linux BBS binary, uploads them to your server as a new release,
+  switches over, checks HTTPS and the SSH banner, and rolls back by itself if
+  the check fails. `--dry-run` shows the plan without touching the server;
+  `--config <path>` uses another config file.
+- `deploy.env` holds the deploy settings (gitignored); copy
+  `deploy.env.example` to start.
+- **Server setup guide.** `docs/DEPLOY.md` walks through the one-time server
+  setup, with templates in `deploy/` for Caddy, the BBS systemd unit and
+  sudoers.
+- Each volume's table of contents links its zine PDFs.
+- `npm test` runs the test suite.
 
 ### Changed
 
@@ -32,6 +44,20 @@ entries are grouped by date. The format follows
   It is still required for written articles.
 - The zine exporter now imports `src/lib/ansi-art.js`; it is no longer a
   single self-contained file.
+- **Volumes moved** to `src/content/volumes/`, a gitignored folder meant to
+  hold your private content repo. `TERMINULL_VOLUMES_DIR` points elsewhere; the
+  site, the zine export and the BBS (`--volumes-dir`) all use it.
+- Article and volume templates moved to `src/content/templates/`.
+- `npm run zine` writes to `public/zine/`; the build copies it into
+  `dist/zine/`.
+- One `TERMINULL_SITE_URL` setting gives the public URL for the site, `.txt`
+  footers, the zine back cover and the BBS.
+- `package.json` is now `"private": true`.
+
+### Removed
+
+- The GitHub Pages workflow.
+- The `Sitemap` line in `robots.txt`; no sitemap is generated.
 
 ## 2026-11-10
 
