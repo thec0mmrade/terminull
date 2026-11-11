@@ -10,6 +10,8 @@ git tag `vX.Y.Z`, and the version in `package.json` is what the site, the
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-11-11
+
 ### Changed
 
 - The homepage footer drops "// no javascript required*" and its footnote; it
