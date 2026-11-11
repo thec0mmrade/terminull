@@ -1,4 +1,7 @@
-import type { GetStaticPaths } from 'astro';
+import fs from 'node:fs';
+import path from 'node:path';
+import type { APIContext, GetStaticPaths } from 'astro';
+import { parseAnsiArt, ansiRowsToAnsi, ANSI_COLS } from '../../../lib/ansi-art.js';
 import { getCollection } from 'astro:content';
 import {
   buildHeader,
@@ -43,11 +46,28 @@ export const getStaticPaths: GetStaticPaths = async () => {
   });
 };
 
-export function GET({ props }: { props: any }) {
-  const { article, latestVolume, prevSlug, prevTitle, nextSlug, nextTitle } = props;
+/** ANSI art: the piece itself in VGA colours, plus how to watch it draw. */
+function renderArt(article: any, url: URL): string {
+  const file = path.join(path.dirname(path.resolve(article.filePath)), path.basename(article.data.ansi));
+  const art = parseAnsiArt(new Uint8Array(fs.readFileSync(file)));
+  const dim = '\x1b[38;5;244m';
+  const reset = '\x1b[0m';
+  return [
+    `${dim}  ${ANSI_COLS}x${art.rows.length}. For the 9600 baud draw-in, pipe it through pv:${reset}`,
+    `${dim}  curl -s ${url.href} | pv -qL 960${reset}`,
+    '',
+    ansiRowsToAnsi(art.rows),
+    '',
+  ].join('\n');
+}
+
+export function GET({ props, site, url }: APIContext) {
+  const { article, latestVolume, prevSlug, prevTitle, nextSlug, nextTitle } = props as any;
   const { data } = article;
 
-  const content = renderMarkdownToAnsi(article.body ?? '');
+  const content = data.ansi
+    ? renderArt(article, new URL(url.pathname, site ?? url))
+    : renderMarkdownToAnsi(article.body ?? '');
 
   const body = [
     buildHeader(latestVolume),

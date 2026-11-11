@@ -153,11 +153,27 @@ func loadArticlesFromDir(dir string, defaultVolume int, baseDir string) []Articl
 			continue
 		}
 		name := entry.Name()
+		filePath := filepath.Join(dir, name)
+
+		// ANSI art: a {order}-{slug}.ans file is an article by itself.
+		if strings.EqualFold(filepath.Ext(name), ".ans") {
+			data, err := safeReadFile(filePath, baseDir)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "warn: skipping %s: %v\n", name, err)
+				continue
+			}
+			if reason := AnsiUnsupportedReason(data); reason != "" {
+				fmt.Fprintf(os.Stderr, "warn: skipping ANSI art %s: %s\n", name, reason)
+				continue
+			}
+			articles = append(articles, ansiArticle(name, data, defaultVolume))
+			continue
+		}
+
 		if !strings.HasSuffix(name, ".md") && !strings.HasSuffix(name, ".mdx") {
 			continue
 		}
 
-		filePath := filepath.Join(dir, name)
 		data, err := safeReadFile(filePath, baseDir)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "warn: skipping %s: %v\n", name, err)

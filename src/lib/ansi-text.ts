@@ -207,7 +207,7 @@ export function buildArticleHeader(meta: {
   title: string;
   order: number;
   category: string;
-  date: Date;
+  date?: Date;
   author: string;
   handle?: string;
   tags: string[];
@@ -215,12 +215,12 @@ export function buildArticleHeader(meta: {
 }): string {
   const dateStr = meta.date instanceof Date
     ? meta.date.toISOString().split('T')[0]
-    : String(meta.date);
+    : meta.date ? String(meta.date) : '';
   const authorStr = meta.handle ? `${meta.author} (@${meta.handle})` : meta.author;
   const tagStr = meta.tags.length > 0 ? meta.tags.join(', ') : 'none';
 
   const lines = [
-    `Article #${String(meta.order).padStart(2, '0')}  |  ${meta.category.toUpperCase()}  |  ${dateStr}`,
+    [`Article #${String(meta.order).padStart(2, '0')}`, meta.category.toUpperCase(), dateStr].filter(Boolean).join('  |  '),
     `Author: ${authorStr}`,
     `Tags: ${tagStr}`,
   ];

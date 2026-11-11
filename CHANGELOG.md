@@ -4,6 +4,35 @@ Notable changes to terminull. The project has no tagged releases yet, so
 entries are grouped by date. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## 2026-11-11
+
+### Added
+
+- **ANSI art articles.** Drop a classic `.ANS` file into a volume folder,
+  named like an article (`11-xibalba.ans`), and it becomes one. Title, artist,
+  group and date are read from the file's SAUCE record.
+  - **Web:** the piece draws in cell by cell at 9600 baud, in the IBM VGA 9x16
+    font on an exact 80-column grid with the VGA palette. The view follows the
+    drawing edge, normal scrolling works throughout, and the drawing pauses
+    while the tab is hidden.
+  - **SSH BBS:** the same draw-in in the terminal, pausing while help or
+    search covers it. Needs an 80-column terminal.
+  - **`.txt` endpoint:** the art in 24-bit VGA colours, with a `pv` hint for
+    the draw-in.
+  - **Print zine:** greyscale, in the VGA font, across as many pages as
+    needed.
+  - Files wider than 80 columns, with blinking text, or with cursor
+    repositioning are skipped with a warning.
+- Web437 IBM VGA 9x16 font from the Ultimate Oldschool PC Font Pack
+  (CC BY-SA 4.0, license included in `public/fonts/`).
+
+### Changed
+
+- An article's `date` may be absent for ANSI art without a dated SAUCE record.
+  It is still required for written articles.
+- The zine exporter now imports `src/lib/ansi-art.js`; it is no longer a
+  single self-contained file.
+
 ## 2026-11-10
 
 ### Security

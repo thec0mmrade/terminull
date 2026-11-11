@@ -1,6 +1,8 @@
 ---
 import { getCollection, render } from 'astro:content';
+import path from 'node:path';
 import ArticleLayout from '../../../layouts/ArticleLayout.astro';
+import AnsiScroller from '../../../components/AnsiScroller.astro';
 
 export async function getStaticPaths() {
   const allArticles = await getCollection('issues', ({ data }) => !data.draft);
@@ -33,7 +35,12 @@ export async function getStaticPaths() {
 }
 
 const { article, prevSlug, prevTitle, nextSlug, nextTitle } = Astro.props;
-const { Content } = await render(article);
+
+// ANSI art: the entry is a .ANS file (see issuesLoader in content.config.ts).
+const ansiFile = article.data.ansi && article.filePath
+  ? path.join(path.dirname(path.resolve(article.filePath)), path.basename(article.data.ansi))
+  : undefined;
+const Content = ansiFile ? null : (await render(article)).Content;
 ---
 
 <ArticleLayout
@@ -51,5 +58,5 @@ const { Content } = await render(article);
   nextSlug={nextSlug}
   nextTitle={nextTitle}
 >
-  <Content />
+  {ansiFile ? <AnsiScroller file={ansiFile} /> : Content && <Content />}
 </ArticleLayout>

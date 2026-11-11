@@ -24,7 +24,7 @@ creative writing for the hacker community. No tracking, no ads, no paywalls.
 - **Admonitions** -- `[!WARN]`, `[!HACK]`, `[!INFO]` callout blocks for security content
 - **Zero JS required** -- Core content is pure static HTML/CSS. Interactive features are progressive enhancements
 - **Search** -- Build-time index, client-side filtering across titles, tags, authors, and categories
-- **ANSI art support** -- Render ANSI escape-coded art files alongside standard ASCII art
+- **ANSI art articles** -- Drop a classic `.ANS` file into a volume and it becomes an article that draws in cell by cell at 9600 baud, in the IBM VGA font, on the web and over SSH
 - **Terminal-native reading** -- Every article has a `.txt` endpoint with ANSI colors, readable via `curl URL | less -R`
 - **SSH BBS** -- Full interactive TUI over SSH with vim navigation, scrollable viewports, and Glamour-rendered markdown
 
@@ -142,6 +142,10 @@ draft: false
 ```
 
 Categories: `editorial`, `guide`, `writeup`, `tool`, `security-news`, `ascii-art`, `fiction`, `interview`
+
+To publish a piece of BBS ANSI art, drop the `.ANS` file into the volume folder
+named like an article (`11-xibalba.ans`). Its title, artist and date are read
+from the file itself.
 
 See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for the full writing guide.
 

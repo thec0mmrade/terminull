@@ -83,6 +83,10 @@ func (a *AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case types.BackMsg:
 		if len(a.stack) > 1 {
 			a.stack = a.stack[:len(a.stack)-1]
+			// Let the uncovered screen restart anything time-driven.
+			if r, ok := a.stack[len(a.stack)-1].(interface{ Resume() tea.Cmd }); ok {
+				return a, r.Resume()
+			}
 			return a, nil
 		}
 		return a, tea.Quit
@@ -132,7 +136,7 @@ func (a *AppModel) navigate(msg types.NavigateMsg) (*AppModel, tea.Cmd) {
 	case "volume":
 		screen = screens.NewVolumeScreen(a.store, msg.Volume, contentWidth, contentHeight)
 	case "article":
-		screen = screens.NewArticleScreen(a.store, msg.Volume, msg.Article, contentWidth, contentHeight, a.siteURL)
+		screen = screens.NewArticleScreenFor(a.store, msg.Volume, msg.Article, a.width, contentWidth, contentHeight, a.siteURL)
 	case "page":
 		screen = screens.NewPageScreen(a.store, msg.PageSlug, contentWidth, contentHeight)
 	case "help":
@@ -161,7 +165,7 @@ func (a *AppModel) replace(msg types.ReplaceMsg) (*AppModel, tea.Cmd) {
 
 	switch msg.Screen {
 	case "article":
-		screen := screens.NewArticleScreen(a.store, msg.Volume, msg.Article, contentWidth, contentHeight, a.siteURL)
+		screen := screens.NewArticleScreenFor(a.store, msg.Volume, msg.Article, a.width, contentWidth, contentHeight, a.siteURL)
 		if len(a.stack) > 0 {
 			a.stack[len(a.stack)-1] = screen
 		}

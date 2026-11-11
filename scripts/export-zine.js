@@ -14,6 +14,9 @@ import { fileURLToPath } from 'node:url';
 import { Marked } from 'marked';
 import puppeteer from 'puppeteer';
 import { PDFDocument } from 'pdf-lib';
+import {
+  ANSI_COLS, ansiCredit, ansiMeta, ansiRowsToHtml, parseAnsiArt, unsupportedReason, vgaGrey,
+} from '../src/lib/ansi-art.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -84,6 +87,31 @@ function loadArticles(volumeNum) {
 
   const files = fs.readdirSync(dir).filter(f => f.endsWith('.md') || f.endsWith('.mdx'));
   const articles = [];
+
+  // ANSI art: a {order}-{slug}.ans file is an article by itself, with its
+  // title, artist and date taken from the file's SAUCE record.
+  for (const file of fs.readdirSync(dir).filter(f => /\.ans$/i.test(f))) {
+    const bytes = new Uint8Array(fs.readFileSync(path.join(dir, file)));
+    const reason = unsupportedReason(bytes);
+    if (reason) {
+      console.warn(`[zine] Skipping ANSI art ${file}: ${reason}.`);
+      continue;
+    }
+    const meta = ansiMeta(file, bytes);
+    articles.push({
+      slug: meta.slug,
+      data: {
+        title: meta.title,
+        author: meta.author,
+        date: meta.date,
+        order: meta.order,
+        category: 'ascii-art',
+        tags: ['ansi'],
+      },
+      body: '',
+      art: { rows: parseAnsiArt(bytes).rows, credit: ansiCredit(meta) },
+    });
+  }
 
   for (const file of files) {
     const raw = fs.readFileSync(path.join(dir, file), 'utf-8');
@@ -207,7 +235,7 @@ function buildDocument(articles, volumeNum) {
   const regularFont = loadFontBase64('IBMPlexMono-Regular.woff2');
   const boldFont = loadFontBase64('IBMPlexMono-Bold.woff2');
 
-  const css = buildCSS(regularFont, boldFont);
+  const css = buildCSS(regularFont, boldFont) + buildAnsiCSS();
   const coverHtml = buildCover(articles, volumeNum);
   const tocHtml = buildTOC(articles, volumeNum);
   const articlesHtml = articles.map((article, idx) =>
@@ -769,10 +797,99 @@ function buildTOC(articles, volumeNum) {
   `;
 }
 
+// ANSI art in print: greyscale, VGA font, 80 columns.
+//
+// The art is rasterised at its native size (9x16 pixel cells) and placed as
+// image strips of ANSI_STRIP_ROWS rows. Drawing it as text instead leaves
+// hairline seams between cells, because the cells land on fractional pixels
+// at print size. At 4.5in wide (the full printable width), each 10-row strip
+// is exactly 1in tall, so strips meet on whole pixels at any integer DPI.
+const ANSI_STRIP_ROWS = 10;
+const ANSI_CELL_W = 9;
+const ANSI_CELL_H = 16;
+
+function buildAnsiCSS() {
+  return `
+    .ansi-print {
+      /* The text column is inset 0.5in each side; the art uses that too. */
+      width: 4.5in;
+      margin-left: -0.5in;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .ansi-print img {
+      display: block;
+      width: 4.5in;
+      image-rendering: pixelated;
+      break-inside: avoid;
+    }
+    .ansi-print-credit {
+      font-size: 7pt;
+      margin-bottom: 6pt;
+    }
+  `;
+}
+
+/**
+ * Render art rows to greyscale PNG strips (base64), ANSI_STRIP_ROWS rows each.
+ * The page holds only markup generated from the parsed grid, never file
+ * content, so it needs none of the article page's lockdown.
+ */
+async function rasterizeArt(browser, rows) {
+  const vgaFont = loadFontBase64('Web437_IBM_VGA_9x16.woff');
+  if (!vgaFont) throw new Error('public/fonts/Web437_IBM_VGA_9x16.woff is missing');
+
+  const grey = (fg, bg) => {
+    const f = vgaGrey(fg);
+    const b = vgaGrey(bg);
+    return `color:rgb(${f},${f},${f});background:rgb(${b},${b},${b})`;
+  };
+  const width = ANSI_COLS * ANSI_CELL_W;
+
+  const page = await browser.newPage();
+  await page.setViewport({ width, height: ANSI_STRIP_ROWS * ANSI_CELL_H, deviceScaleFactor: 1 });
+  await page.setContent(`<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+    @font-face { font-family: 'IBM VGA 9x16'; src: url(data:font/woff;base64,${vgaFont}) format('woff'); }
+    html, body { margin: 0; background: #000; }
+    .ansi-screen {
+      width: ${width}px; white-space: pre; letter-spacing: 0;
+      font: ${ANSI_CELL_H}px/${ANSI_CELL_H}px 'IBM VGA 9x16', monospace;
+      font-variant-ligatures: none; font-kerning: none;
+      -webkit-font-smoothing: none; text-rendering: optimizeSpeed;
+    }
+    .ansi-row { height: ${ANSI_CELL_H}px; overflow: hidden; }
+  </style></head><body><div class="ansi-screen">${ansiRowsToHtml(rows, grey)}</div></body></html>`,
+    { waitUntil: 'load' });
+  await page.evaluate(() => document.fonts.ready);
+
+  const strips = [];
+  for (let start = 0; start < rows.length; start += ANSI_STRIP_ROWS) {
+    const n = Math.min(ANSI_STRIP_ROWS, rows.length - start);
+    strips.push(await page.screenshot({
+      type: 'png',
+      encoding: 'base64',
+      clip: { x: 0, y: start * ANSI_CELL_H, width, height: n * ANSI_CELL_H },
+    }));
+  }
+  await page.close();
+  return strips;
+}
+
+function buildAnsiBody(art) {
+  const strips = art.strips
+    .map(png => `<img src="data:image/png;base64,${png}" alt="">`)
+    .join('');
+  return `
+    <div class="ansi-print-credit">${escapeHtml(art.credit)} &mdash; ${ANSI_COLS}&times;${art.rows.length}</div>
+    <div class="ansi-print">${strips}</div>
+  `;
+}
+
 function buildArticlePage(article, index, total) {
   const { data, body } = article;
   const processed = preprocessMarkdown(body);
-  const { html, links } = renderArticleHtml(processed);
+  const { html: markdownHtml, links } = renderArticleHtml(processed);
+  const html = article.art ? buildAnsiBody(article.art) : markdownHtml;
 
   const num = String(data.order ?? index).padStart(2, '0');
   const category = escapeHtml((data.category || '').toUpperCase());
@@ -800,7 +917,7 @@ function buildArticlePage(article, index, total) {
   <div class="page">
     <div class="article-corner">#${num} &mdash; ${category}</div>
     <div class="article-title">${title}</div>
-    <div class="article-byline">by ${author} &mdash; ${dateStr}</div>
+    <div class="article-byline">by ${author}${dateStr ? ` &mdash; ${dateStr}` : ''}</div>
     ${tags ? `<div class="article-tags">tags: ${tags}</div>` : ''}
     <hr class="article-separator">
     <div class="article-body">
@@ -829,15 +946,17 @@ function buildBackCover(volumeNum) {
 // PDF generation
 // ---------------------------------------------------------------------------
 
-async function generatePdf(html, outputPath) {
+function launchBrowser() {
   // Chromium's sandbox stays on unless ZINE_NO_SANDBOX=1 (needed in some
   // containers and CI runners).
   const noSandbox = process.env.ZINE_NO_SANDBOX === '1';
-  const browser = await puppeteer.launch({
+  return puppeteer.launch({
     headless: true,
     args: noSandbox ? ['--no-sandbox', '--disable-setuid-sandbox'] : [],
   });
+}
 
+async function generatePdf(browser, html, outputPath) {
   const page = await browser.newPage();
 
   // Article markdown may contain raw HTML. Nothing in the zine needs
@@ -867,7 +986,7 @@ async function generatePdf(html, outputPath) {
     footerTemplate: '<div style="font-size:8px;font-family:\'IBM Plex Mono\',monospace;width:100%;text-align:center;color:#999;"><span class="pageNumber"></span></div>',
   });
 
-  await browser.close();
+  await page.close();
 }
 
 // ---------------------------------------------------------------------------
@@ -952,8 +1071,21 @@ async function main() {
 
   console.log(`[zine] Found ${articles.length} articles`);
 
-  console.log('[zine] Rendering HTML...');
-  const html = buildDocument(articles, volumeNum);
+  const browser = await launchBrowser();
+  try {
+    const pieces = articles.filter(a => a.art);
+    if (pieces.length > 0) console.log(`[zine] Rasterising ${pieces.length} ANSI art piece(s)...`);
+    for (const piece of pieces) piece.art.strips = await rasterizeArt(browser, piece.art.rows);
+
+    console.log('[zine] Rendering HTML...');
+    const html = buildDocument(articles, volumeNum);
+    await exportPdfs(browser, html, volumeNum);
+  } finally {
+    await browser.close();
+  }
+}
+
+async function exportPdfs(browser, html, volumeNum) {
 
   const outDir = path.join(ROOT, 'dist', 'zine');
   fs.mkdirSync(outDir, { recursive: true });
@@ -962,7 +1094,7 @@ async function main() {
   const bookletPath = path.join(outDir, `terminull-vol${volumeNum}-booklet.pdf`);
 
   console.log('[zine] Generating reader PDF...');
-  await generatePdf(html, readerPath);
+  await generatePdf(browser, html, readerPath);
 
   console.log('[zine] Imposing booklet spreads...');
   await imposeBooklet(readerPath, bookletPath);

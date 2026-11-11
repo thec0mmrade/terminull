@@ -327,6 +327,34 @@ author handle:
 *-- ~stacksmash3r*
 ```
 
+### ANSI Art as an Article
+
+A classic BBS ANSI art file can be an article by itself. Put the `.ANS` file
+in the volume folder, named like any article:
+
+```
+src/content/issues/vol1/11-xibalba.ans
+```
+
+That is the whole step. There is no markdown file and no frontmatter:
+
+- The number sets its place in the table of contents; the rest of the name is
+  its URL (`/vol/1/11-xibalba`).
+- Title, artist, group and date come from the file's SAUCE record (the credits
+  most art files carry). A file without one uses its filename as the title and
+  "unknown" as the artist.
+- It is published as soon as the file is in the folder. There is no draft
+  flag; keep a file out of the folder to hold it back.
+
+Readers see it draw in cell by cell at 9600 baud on the web and over SSH, get
+the coloured art from the `.txt` endpoint, and find it in greyscale in the
+print zine.
+
+Limits: 80 columns wide at most, colours and "cursor right" moves only. A file
+that blinks, repositions the cursor mid-drawing, or is wider than 80 columns is
+skipped with a build warning. Only publish art you have the right to share,
+and keep the artist's credits intact.
+
 ### ASCII Art in Articles
 
 Use fenced code blocks (no language identifier) or unfenced preformatted blocks

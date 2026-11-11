@@ -433,6 +433,56 @@ persisted).
 
 ---
 
+## ANSI Art Articles
+
+A `{order}-{slug}.ans` file in a volume folder is an article with no markdown
+behind it. Classic `.ANS` art is CP437 text with colour codes and
+cursor-forward moves, usually ending in a SAUCE metadata record.
+
+### Shared parser
+
+`src/lib/ansi-art.js` is plain JavaScript because three things import it: the
+Astro build, the browser playback script, and `scripts/export-zine.js`. The Go
+server has its own copy of the same logic in `ssh/content/ansiart.go`; keep
+the two in step.
+
+- `parseAnsiArt()` turns a file into a grid of cells (character, foreground
+  0-15, background 0-7), 80 columns wide.
+- `advanceCursor()` replays the byte stream and tracks where a terminal's
+  cursor would be. The parser and both playback animations use it.
+- `parseSauce()` / `ansiMeta()` read title, artist, group and date.
+- `unsupportedReason()` rejects files wider than 80 columns, with blinking
+  text, or with cursor moves other than "forward".
+
+The parser never passes a file's escape sequences through. Output is built
+from the cell grid, so a file cannot inject terminal escapes or HTML.
+
+**Wrap rule.** A cursor that has run off the right edge wraps before the next
+byte of any kind is processed, including cursor moves and line breaks. This
+matches ansilove, the reference renderer; getting it wrong shifts every row
+that follows a cursor move landing on the edge. Rendering is checked against
+16colo.rs's PNG of the same file.
+
+### Where a piece appears
+
+| Surface | How |
+|---------|-----|
+| Collection entry | `issuesLoader()` in `src/content.config.ts` wraps the markdown `glob()` loader and adds one entry per `.ans` file, with metadata from SAUCE and `data.ansi` set to the filename. Table of contents, search and navigation need nothing extra. |
+| Web page | `[slug].astro` renders `AnsiScroller.astro` instead of markdown. The finished art is static HTML (works without JS); the script reveals rows up to the replayed cursor at 9600 baud. Font: Web437 IBM VGA 9x16, 16px, so 80 columns are exactly 720px. Colours: VGA palette. |
+| `.txt` endpoint | The grid as text with 24-bit VGA colours, plus a `pv -qL 960` hint for the draw-in. |
+| SSH BBS | `ui/screens/ansiart.go`, a viewport that grows as a tick advances the cursor. Needs an 80-column terminal. |
+| Print zine | Rasterised in the VGA font, greyscale, as 10-row image strips (see Print Zine Export). |
+
+### Playback behaviour
+
+Both animations count time only while the piece is being watched: a hidden
+browser tab, or the help or search screen over the piece in the BBS, pauses
+it. The view follows the drawing edge until the reader scrolls away, and
+follows again when they return to it. Readers who ask for reduced motion get
+the finished art at once.
+
+---
+
 ## Search System
 
 ### Build Time
@@ -729,6 +779,15 @@ Raw markdown (src/content/issues/vol{N}/)
   → pdf-lib imposes into 11"×8.5" landscape booklet spreads
 ```
 
+### ANSI art
+
+`.ans` files in the volume folder are loaded as articles through
+`src/lib/ansi-art.js`. Each is rasterised in headless Chromium at its native
+size (9x16-pixel cells, greyscale) and placed as image strips of 10 rows.
+Drawn as text, the cells land on fractional pixels at print size and leave
+hairline seams; as strips at 4.5in wide, each strip is exactly 1in tall and
+they meet cleanly. Strips never split across a page.
+
 ### Content Loading
 
 Reads raw markdown from `src/content/issues/vol{N}/`. Has its own simple YAML
@@ -780,6 +839,7 @@ src/
 │   └── keyboard-nav.css        # Navigation, overlays, fixed bars
 ├── components/
 │   ├── AnsiArt.astro           # ANSI escape art renderer
+│   ├── AnsiScroller.astro      # ANSI art article: modem-speed draw-in
 │   ├── ArticleList.astro       # Volume article table
 │   ├── ArticleNav.astro        # Prev/Next article navigation
 │   ├── AsciiArt.astro          # ASCII art renderer
@@ -803,6 +863,7 @@ src/
 │   ├── ArticleLayout.astro     # Article page layout
 │   └── IssueLayout.astro       # Volume TOC layout
 ├── lib/
+│   ├── ansi-art.js             # .ANS parser, SAUCE, cursor replay (shared with zine script)
 │   ├── ansi-render.ts          # ANSI-to-HTML conversion wrapper
 │   ├── ansi-text.ts            # ANSI text rendering (marked-terminal) + BBS chrome builders
 │   └── search-index.ts         # Search index builder

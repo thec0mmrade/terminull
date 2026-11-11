@@ -9,7 +9,7 @@ interface Props {
   description: string;
   author: string;
   handle?: string;
-  date: Date;
+  date?: Date;
   volume: number;
   order: number;
   category: string;
@@ -25,7 +25,7 @@ const {
   order, category, tags, prevSlug, prevTitle, nextSlug, nextTitle,
 } = Astro.props;
 
-const dateStr = date.toISOString().split('T')[0];
+const dateStr = date ? date.toISOString().split('T')[0] : '';
 ---
 
 <BaseLayout
@@ -40,7 +40,7 @@ const dateStr = date.toISOString().split('T')[0];
       <div class="article__meta">
         <span class="article__num">#{String(order).padStart(2, '0')}</span>
         <CategoryBadge category={category} />
-        <span class="article__date">{dateStr}</span>
+        {dateStr && <span class="article__date">{dateStr}</span>}
       </div>
       <div class="article__author">
         by <span class="article__author-name">{author}</span>

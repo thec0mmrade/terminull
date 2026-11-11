@@ -16,6 +16,7 @@ type Article struct {
 	Draft       bool
 	Slug        string // from filename: "01-smashing-the-stack"
 	Body        string // raw markdown after frontmatter
+	Art         *AnsiArt // set when the article is a piece of ANSI art
 }
 
 // Page represents a static page (about, manifesto).
