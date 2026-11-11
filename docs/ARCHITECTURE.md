@@ -742,7 +742,8 @@ ssh/
     ├── types/
     │   └── types.go           # Shared types (Screen, NavigateMsg, BackMsg, ReplaceMsg)
     ├── screens/
-    │   ├── home.go            # Connection animation + main menu
+    │   ├── home.go            # Connection animation + main menu (mirrors src/lib/home.js)
+    │   ├── archive.go         # Volume archive (like /vol)
     │   ├── volume.go          # Volume TOC article table
     │   ├── article.go         # Glamour-rendered article in viewport
     │   ├── page.go            # Static page in viewport

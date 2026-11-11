@@ -126,7 +126,7 @@ The name "terminull" appears in these locations. Update all of them:
 | `src/components/Seo.astro:23` | OG site name (`terminull`) |
 | `src/components/CrtEffect.astro:10` | localStorage key (`terminull-crt`) |
 | `src/pages/index.astro:15` | Page title and description |
-| `src/pages/index.astro:25-26` | MOTD welcome text |
+| `src/lib/home.js`, `ssh/ui/components/chrome.go` | Menu descriptions and MOTD welcome text (web, `.txt` and BBS) |
 | `src/pages/index.astro:34` | Footer text |
 | `src/content/pages/about.md` | Content references to the name |
 | `src/content/pages/manifesto.md` | Content references to the name |
@@ -243,16 +243,15 @@ The system info panel below the logo. Edit `src/components/BbsHeader.astro`:
 
 ### MOTD (Message of the Day)
 
-The welcome message on the homepage. Edit `src/pages/index.astro:22-29`:
+The welcome message on the homepage. The main menu and the message of the day are defined once, in
+`src/lib/home.js` (`mainMenu()`, `MOTD_TEXT`), and used by the homepage
+(`src/pages/index.astro`) and its `.txt` twin. The SSH BBS shows the same
+menu and message: `mainMenu()` in `ssh/ui/screens/home.go` and `RenderMOTD()`
+in `ssh/ui/components/chrome.go`. Change all three together; the Go and
+JavaScript tests check the menu wording matches.
 
-```html
-<div class="motd">
-  <p class="motd-label">[MESSAGE OF THE DAY]</p>
-  <p class="motd-text">
-    Your custom welcome message here.
-  </p>
-</div>
-```
+Edit `MOTD_TEXT` in `src/lib/home.js` and the matching text in `RenderMOTD()`
+in `ssh/ui/components/chrome.go`.
 
 ### ASCII Art
 
@@ -328,8 +327,8 @@ Quick reference:
 
 2. The page is automatically routed to `/{slug}` by `src/pages/[page].astro`.
 
-3. If you want it in the main menu, add it to the `menuItems` array in
-   `src/pages/index.astro:6-12`.
+3. If you want it in the main menu, add it to `mainMenu()` in
+   `src/lib/home.js` and in `ssh/ui/screens/home.go`.
 
 4. If you want it accessible via the `cd` command, add a case in
    `src/components/BbsPrompt.astro:79-98`.
@@ -453,5 +452,5 @@ Follow existing patterns:
 3. If the new page should be reachable via the command prompt, add a case to
    the `cd` command switch in `src/components/BbsPrompt.astro:79-98`.
 
-4. If it should appear in the main menu, add it to `menuItems` in
-   `src/pages/index.astro:6-12`.
+4. If it should appear in the main menu, add it to `mainMenu()` in
+   `src/lib/home.js` and in `ssh/ui/screens/home.go`.

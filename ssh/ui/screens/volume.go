@@ -70,26 +70,20 @@ func (v *VolumeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return v, navigateCmd("article", v.volNum, v.cursor, "", "")
 			}
 			return v, nil
-		case "1", "2", "3", "4", "5", "6", "7", "8", "9":
-			idx := int(msg.String()[0]-'0') - 1
-			if v.volume != nil && idx < len(v.volume.Articles) {
-				v.cursor = idx
-				return v, navigateCmd("article", v.volNum, idx, "", "")
-			}
-			return v, nil
-		case "0":
-			idx := 9
-			if v.volume != nil && idx < len(v.volume.Articles) {
-				v.cursor = idx
-				return v, navigateCmd("article", v.volNum, idx, "", "")
-			}
-			return v, nil
 		case "q", "esc":
 			return v, backCmd()
 		case "?":
 			return v, navigateCmd("help", 0, 0, "", "")
 		case "/":
 			return v, navigateCmd("search", 0, 0, "", "")
+		}
+		// A digit opens the article with that order number (the [NN] shown),
+		// as on the website: 0 opens [00].
+		if v.volume != nil {
+			if idx, ok := articleByOrderKey(v.volume.Articles, msg.String()); ok {
+				v.cursor = idx
+				return v, navigateCmd("article", v.volNum, idx, "", "")
+			}
 		}
 	}
 
@@ -167,6 +161,21 @@ func (v *VolumeScreen) View() string {
 	b.WriteString("\n")
 
 	return b.String()
+}
+
+// articleByOrderKey returns the index of the article whose order number is
+// the digit key pressed.
+func articleByOrderKey(articles []content.Article, key string) (int, bool) {
+	if len(key) != 1 || key[0] < '0' || key[0] > '9' {
+		return 0, false
+	}
+	order := int(key[0] - '0')
+	for i, a := range articles {
+		if a.Order == order {
+			return i, true
+		}
+	}
+	return 0, false
 }
 
 func (v *VolumeScreen) StatusInfo() (string, *int) {

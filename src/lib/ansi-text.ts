@@ -276,11 +276,12 @@ export function buildMenu(title: string, items: { label: string; description: st
 
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
-    const num = `${C.green}${BOLD}  [${i + 1}]${C.reset}`;
+    const num = `${C.green}${BOLD}  [${String(i).padStart(2, '0')}]${C.reset}`;
     const label = `${C.text}${item.label}${C.reset}`;
     const desc = `${C.secondary}${item.description}${C.reset}`;
-    const hint = item.hint ? `  ${C.muted}${item.hint}${C.reset}` : '';
-    lines.push(`${num} ${label} ${C.muted}─${C.reset} ${desc}${hint}`);
+    lines.push(`${num} ${label} ${C.muted}-${C.reset} ${desc}`);
+    // On its own line so long URLs don't push the menu past 80 columns.
+    if (item.hint) lines.push(`       ${C.muted}${item.hint}${C.reset}`);
   }
 
   lines.push('');

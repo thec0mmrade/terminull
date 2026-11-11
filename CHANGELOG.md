@@ -10,6 +10,26 @@ git tag `vX.Y.Z`, and the version in `package.json` is what the site, the
 
 ## [Unreleased]
 
+### Added
+
+- **SSH BBS: volume archive.** `[01] Archive` opens a list of every volume,
+  like the website's `/vol` page.
+
+### Changed
+
+- **One main menu everywhere.** The website, the `.txt` homepage and the SSH
+  BBS show the same menu, numbered from `[00]`: `[00] Latest Volume` (opens
+  the newest volume), `[01] Archive`, `[02] About`, `[03] Manifesto`,
+  `[04] Help`, with the same descriptions. It is defined once in
+  `src/lib/home.js` and mirrored by the BBS.
+- **One message of the day.** The BBS shows the website's welcome text under
+  the same "MESSAGE OF THE DAY" heading, and the `.txt` homepage uses it too.
+- **SSH BBS:** number keys now match the website: `0` picks `[00]` on the
+  main menu and archive, and in a volume a digit opens the article with that
+  number. The help screen says `0-9`.
+- **`.txt` menus** number from `[00]` and put each `curl` hint on its own
+  line, so they fit in 80 columns.
+
 ## [1.1.0] - 2026-11-11
 
 ### Changed

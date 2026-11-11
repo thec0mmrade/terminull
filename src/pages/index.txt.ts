@@ -7,31 +7,47 @@ import {
   C,
 } from '../lib/ansi-text';
 import { siteUrl } from '../lib/site-url.js';
+import { mainMenu, latestVolume, MOTD_TITLE, MOTD_TEXT } from '../lib/home.js';
 
+// Same menu and message as the web homepage (src/lib/home.js); items with a
+// .txt version show the curl command for it.
 export async function GET() {
-  const articles = await getCollection('issues', ({ data }) => !data.draft);
-  const latestVolume = articles.length > 0
-    ? Math.max(...articles.map(a => a.data.volume))
-    : 0;
+  const published = await getCollection('issues', ({ data }) => !data.draft);
+  const latest = latestVolume(published);
+  const site = siteUrl();
 
-  const menuItems = [
-    { label: 'Archive', description: 'All volumes', hint: 'curl HOST/vol/1/index.txt' },
-    { label: 'About', description: 'What is terminull?' },
-    { label: 'Manifesto', description: 'What we believe' },
-    { label: 'Help', description: 'Commands & navigation' },
-  ];
+  const menuItems = mainMenu(latest).map(({ label, description, txt }) => ({
+    label,
+    description,
+    hint: txt ? `curl ${site}${txt}` : undefined,
+  }));
 
   const body = [
-    buildHeader(latestVolume),
+    buildHeader(latest ? latest.number : 0),
     buildMenu('MAIN MENU', menuItems),
-    `${C.gold}[MESSAGE OF THE DAY]${C.reset}`,
+    `${C.gold}[${MOTD_TITLE}]${C.reset}`,
     '',
-    `${C.secondary}Welcome to ${C.green}terminull${C.secondary}. This is a space for hackers,${C.reset}`,
-    `${C.secondary}researchers, artists, and anyone who believes knowledge${C.reset}`,
-    `${C.secondary}should be free.${C.reset}`,
+    ...wrap(MOTD_TEXT, 64).map((line) =>
+      `${C.secondary}${line.replace('terminull', `${C.green}terminull${C.secondary}`)}${C.reset}`),
     '',
-    buildFooter(siteUrl()),
+    buildFooter(site),
   ].join('\n');
 
   return textResponse(body);
+}
+
+/** Greedy word wrap to at most `width` columns. */
+function wrap(text: string, width: number): string[] {
+  const lines: string[] = [];
+  let line = '';
+  for (const word of text.split(/\s+/)) {
+    if (line && line.length + 1 + word.length > width) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = line ? `${line} ${word}` : word;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
 }

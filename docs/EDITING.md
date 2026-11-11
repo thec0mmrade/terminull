@@ -189,34 +189,34 @@ false`, they appear in both HTML and text endpoints.
 
 ## Maintaining the Homepage
 
-The homepage is `src/pages/index.astro`. Key editable sections:
+The homepage is `src/pages/index.astro`. The main menu and the message of the day are defined once, in
+`src/lib/home.js` (`mainMenu()`, `MOTD_TEXT`), and used by the homepage
+(`src/pages/index.astro`) and its `.txt` twin. The SSH BBS shows the same
+menu and message: `mainMenu()` in `ssh/ui/screens/home.go` and `RenderMOTD()`
+in `ssh/ui/components/chrome.go`. Change all three together; the Go and
+JavaScript tests check the menu wording matches.
 
-### Menu Items (lines 6-12)
+### Menu
 
-```typescript
-const menuItems = [
-  { label: 'Archive', href: '/vol', description: 'All volumes' },
-  { label: 'About', href: '/about', description: 'What is terminull?' },
-  { label: 'Manifesto', href: '/manifesto', description: 'What we believe' },
-  { label: 'Help', href: '/help', description: 'Commands & navigation' },
-];
+Numbered from `[00]`, the same on the website, `.txt` and the BBS:
+
+```
+[00] Latest Volume - Volume 01, 12 articles
+[01] Archive - All volumes
+[02] About - What is terminull?
+[03] Manifesto - What we believe
+[04] Help - Commands & navigation
 ```
 
-When publishing a new volume, add a `Latest Issue` entry pointing to the new
-volume's `href` and `description`.
+**Latest Volume** always opens the newest published volume, so publishing a
+new volume needs no menu change. Number keys pick items: `0` opens `[00]`.
 
-### MOTD (lines 22-29)
+### MOTD
 
-```html
-<div class="motd">
-  <p class="motd-label">[MESSAGE OF THE DAY]</p>
-  <p class="motd-text">
-    Welcome to <strong>terminull</strong>. ...
-  </p>
-</div>
-```
-
-Update the MOTD text for new volumes, announcements, or seasonal messages.
+`MOTD_TEXT` in `src/lib/home.js` (and the same text in `RenderMOTD()` for the
+BBS). Update it for new volumes, announcements, or seasonal messages. The
+website adds "Type help or press ? …"; the BBS, which has no `help` command,
+adds "Press ? …".
 
 ### Footer
 
@@ -247,8 +247,8 @@ Static pages in `src/content/pages/` auto-route to `/{slug}` via
    ---
    ```
 
-2. To add it to the homepage menu, add an entry to `menuItems` in
-   `src/pages/index.astro:6-12`.
+2. To add it to the homepage menu, add it to `mainMenu()` in
+   `src/lib/home.js` and in `ssh/ui/screens/home.go`.
 
 3. To make it reachable via the `cd` command, add a case in the switch
    statement at `src/components/BbsPrompt.astro:79-97`:

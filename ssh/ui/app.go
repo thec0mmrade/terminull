@@ -135,6 +135,8 @@ func (a *AppModel) navigate(msg types.NavigateMsg) (*AppModel, tea.Cmd) {
 	switch msg.Screen {
 	case "volume":
 		screen = screens.NewVolumeScreen(a.store, msg.Volume, contentWidth, contentHeight)
+	case "archive":
+		screen = screens.NewArchiveScreen(a.store, contentWidth, contentHeight)
 	case "article":
 		screen = screens.NewArticleScreenFor(a.store, msg.Volume, msg.Article, a.width, contentWidth, contentHeight, a.siteURL)
 	case "page":

@@ -92,7 +92,7 @@ func (h *HelpScreen) renderContent() {
 	lines = append(lines, formatKey("k / ↑", "Move up"))
 	lines = append(lines, formatKey("Enter", "Select item"))
 	lines = append(lines, formatKey("Esc / q", "Go back"))
-	lines = append(lines, formatKey("1-9", "Quick jump to item"))
+	lines = append(lines, formatKey("0-9", "Quick jump to numbered item"))
 	lines = append(lines, "")
 	lines = append(lines, sectionStyle.Render("ARTICLE READER"))
 	lines = append(lines, "")

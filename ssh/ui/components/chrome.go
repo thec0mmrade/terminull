@@ -52,10 +52,10 @@ func RenderMOTD(width int) string {
 	if boxWidth > 78 {
 		boxWidth = 78
 	}
-	lines := []string{
-		"Knowledge wants to be free.",
-		"Share what you learn. Teach what you know.",
-		"The terminal is your canvas.",
-	}
-	return RenderBoxFrame("MOTD", lines, boxWidth)
+	// Same message as the website (MOTD_TEXT in src/lib/home.js); the BBS has
+	// no "help" command, so its hint names only "?".
+	text := "Welcome to terminull. This is a space for hackers, researchers, " +
+		"artists, and anyone who believes knowledge should be free. " +
+		"Press ? for navigation commands."
+	return RenderBoxFrame("MESSAGE OF THE DAY", WordWrap(text, boxWidth-4), boxWidth)
 }

@@ -1,7 +1,6 @@
 package screens
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
@@ -38,40 +37,43 @@ type HomeScreen struct {
 type menuItem struct {
 	label       string
 	description string
-	action      string // "volume", "page", "help"
+	action      string // "volume", "archive", "page", "help"
 	volume      int
 	pageSlug    string
 }
 
-func NewHomeScreen(store *content.Store, width, height int, username, siteURL string) *HomeScreen {
+// mainMenu is the website's main menu (src/lib/home.js), numbered from [00]:
+// Latest Volume (when one is published), Archive, About, Manifesto, Help.
+// Keep the two in step. About and Manifesto appear only if the page exists.
+func mainMenu(store *content.Store) []menuItem {
 	var items []menuItem
-
-	// Add volumes
-	for _, v := range store.Volumes {
+	if n := len(store.Volumes); n > 0 {
+		latest := store.Volumes[n-1]
 		items = append(items, menuItem{
-			label:       fmt.Sprintf("Vol %d — Table of Contents", v.Number),
-			description: fmt.Sprintf("%d articles", len(v.Articles)),
+			label:       "Latest Volume",
+			description: components.VolumeSummary(latest.Number, len(latest.Articles)),
 			action:      "volume",
-			volume:      v.Number,
+			volume:      latest.Number,
 		})
 	}
-
-	// Add static pages
+	items = append(items, menuItem{label: "Archive", description: "All volumes", action: "archive"})
+	pages := map[string]bool{}
 	for _, p := range store.Pages {
-		items = append(items, menuItem{
-			label:       p.Title,
-			description: p.Description,
-			action:      "page",
-			pageSlug:    p.Slug,
-		})
+		pages[p.Slug] = true
 	}
+	for _, p := range []struct{ slug, label, description string }{
+		{"about", "About", "What is terminull?"},
+		{"manifesto", "Manifesto", "What we believe"},
+	} {
+		if pages[p.slug] {
+			items = append(items, menuItem{label: p.label, description: p.description, action: "page", pageSlug: p.slug})
+		}
+	}
+	return append(items, menuItem{label: "Help", description: "Commands & navigation", action: "help"})
+}
 
-	// Help
-	items = append(items, menuItem{
-		label:       "Help — Keyboard Reference",
-		description: "Navigation and key bindings",
-		action:      "help",
-	})
+func NewHomeScreen(store *content.Store, width, height int, username, siteURL string) *HomeScreen {
+	items := mainMenu(store)
 
 	return &HomeScreen{
 		store:    store,
@@ -126,26 +128,17 @@ func (h *HomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return h, nil
 		case "enter":
 			return h, h.selectItem(h.cursor)
-		case "1", "2", "3", "4", "5", "6", "7", "8", "9":
-			idx := int(msg.String()[0]-'0') - 1
-			if idx < len(h.items) {
-				h.cursor = idx
-				return h, h.selectItem(idx)
-			}
-			return h, nil
-		case "0":
-			idx := 9
-			if idx < len(h.items) {
-				h.cursor = idx
-				return h, h.selectItem(idx)
-			}
-			return h, nil
 		case "?":
 			return h, navigateCmd("help", 0, 0, "", "")
 		case "/":
 			return h, navigateCmd("search", 0, 0, "", "")
 		case "q":
 			return h, func() tea.Msg { return tea.QuitMsg{} }
+		}
+		// Digits pick a menu item by its number: 0 is [00].
+		if idx, ok := components.MenuKeyIndex(msg.String(), len(h.items)); ok {
+			h.cursor = idx
+			return h, h.selectItem(idx)
 		}
 	}
 
@@ -160,6 +153,8 @@ func (h *HomeScreen) selectItem(idx int) tea.Cmd {
 	switch item.action {
 	case "volume":
 		return navigateCmd("volume", item.volume, 0, "", "")
+	case "archive":
+		return navigateCmd("archive", 0, 0, "", "")
 	case "page":
 		return navigateCmd("page", 0, 0, item.pageSlug, "")
 	case "help":
@@ -222,28 +217,11 @@ func (h *HomeScreen) View() string {
 	b.WriteString(components.RenderDivider(w))
 	b.WriteString("\n\n")
 
+	entries := make([]components.MenuEntry, len(h.items))
 	for i, item := range h.items {
-		num := fmt.Sprintf("[%d]", i+1)
-		if i == h.cursor {
-			numStyle := lipgloss.NewStyle().Foreground(theme.GreenBright).Bold(true)
-			labelStyle := lipgloss.NewStyle().Foreground(theme.GreenBright).Bold(true)
-			descStyle := lipgloss.NewStyle().Foreground(theme.Green)
-			cursor := lipgloss.NewStyle().Foreground(theme.Green).Render("▸ ")
-			b.WriteString(cursor + numStyle.Render(num) + " " + labelStyle.Render(item.label))
-			if item.description != "" {
-				b.WriteString(" " + lipgloss.NewStyle().Foreground(theme.Muted).Render("─") + " " + descStyle.Render(item.description))
-			}
-		} else {
-			numStyle := lipgloss.NewStyle().Foreground(theme.Green).Bold(true)
-			labelStyle := lipgloss.NewStyle().Foreground(theme.Text)
-			descStyle := lipgloss.NewStyle().Foreground(theme.Secondary)
-			b.WriteString("  " + numStyle.Render(num) + " " + labelStyle.Render(item.label))
-			if item.description != "" {
-				b.WriteString(" " + lipgloss.NewStyle().Foreground(theme.Muted).Render("─") + " " + descStyle.Render(item.description))
-			}
-		}
-		b.WriteString("\n")
+		entries[i] = components.MenuEntry{Label: item.label, Description: item.description}
 	}
+	b.WriteString(components.RenderMenu(entries, h.cursor))
 
 	b.WriteString("\n")
 

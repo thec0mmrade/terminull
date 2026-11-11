@@ -2,14 +2,14 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BbsMenu from '../components/BbsMenu.astro';
 import AsciiArt from '../components/AsciiArt.astro';
-
-const menuItems = [
-  { label: 'Archive', href: '/vol', description: 'All volumes' },
-  { label: 'About', href: '/about', description: 'What is terminull?' },
-  { label: 'Manifesto', href: '/manifesto', description: 'What we believe' },
-  { label: 'Help', href: '/help', description: 'Commands & navigation' },
-];
+import { getCollection } from 'astro:content';
 import { versionLabel } from '../lib/version.js';
+import { mainMenu, latestVolume, MOTD_TITLE, MOTD_TEXT } from '../lib/home.js';
+
+// Menu and message are shared with index.txt.ts and mirrored by the SSH BBS.
+const published = await getCollection('issues', ({ data }) => !data.draft);
+const menuItems = mainMenu(latestVolume(published));
+const [motdBefore, motdAfter] = MOTD_TEXT.split('terminull');
 ---
 
 <BaseLayout title="terminull" description="terminull - hacker e-zine. A return to the underground." page="HOME">
@@ -20,10 +20,9 @@ import { versionLabel } from '../lib/version.js';
   <div class="terminal-divider" aria-hidden="true">{'─'.repeat(76)}</div>
 
   <div class="motd">
-    <p class="motd-label">[MESSAGE OF THE DAY]</p>
+    <p class="motd-label">[{MOTD_TITLE}]</p>
     <p class="motd-text">
-      Welcome to <strong>terminull</strong>. This is a space for hackers,
-      researchers, artists, and anyone who believes knowledge should be free.
+      {motdBefore}<strong>terminull</strong>{motdAfter}
       Type <code>help</code> or press <code>?</code> for navigation commands.
     </p>
   </div>
