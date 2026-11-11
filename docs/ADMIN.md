@@ -166,7 +166,7 @@ Six runtime dependencies and two dev dependencies:
 | `unist-util-visit`  | `^5.1.0`  | AST traversal for remark/rehype plugins |
 | `marked`           | `^15`     | Markdown parser for ANSI text rendering |
 | `marked-terminal`  | `^7`      | Renders markdown as ANSI escape sequences |
-| `puppeteer`        | `^24`     | Headless Chrome for PDF generation (dev) |
+| `puppeteer`        | `^25.17`  | Headless Chrome for PDF generation (dev) |
 | `pdf-lib`          | `^1.17`   | PDF page manipulation for booklet imposition (dev) |
 
 No linter, no test runner, no formatter configured.
@@ -183,6 +183,29 @@ npm update
 # Verify nothing broke
 npm run build
 ```
+
+### Security Audits
+
+```bash
+# npm: list advisories, apply non-breaking fixes
+npm audit
+npm audit fix
+
+# Go (SSH BBS): update modules, then check reachable advisories
+cd ssh
+go get -u golang.org/x/crypto golang.org/x/net
+go mod tidy
+go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+```
+
+Rebuild and restart the SSH BBS after Go updates -- a running server keeps the
+old binary. `ssh/go.mod` requires Go 1.26+.
+
+As of 2026-11-10, the `npm audit` advisories that remain (`astro`,
+`@astrojs/mdx`, `sharp`, `zod`, `zod-to-ts`, `esbuild`) are only fixed by the
+Astro 7 major upgrade. `github.com/charmbracelet/ssh` is pinned to a
+pseudo-version because its tagged releases moved to the `charm.land/ssh`
+module path.
 
 ### Astro Major Version Upgrades
 
@@ -333,7 +356,7 @@ WantedBy=multi-user.target
 **Docker**:
 
 ```dockerfile
-FROM golang:1.24 AS build
+FROM golang:1.26 AS build
 WORKDIR /app
 COPY ssh/ .
 RUN go build -o terminull-ssh .

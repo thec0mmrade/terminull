@@ -105,7 +105,7 @@ You get a TUI with the same visual identity -- connection animation, ASCII logo,
 
 ```bash
 cd ssh
-go build .              # Requires Go 1.23+
+go build .              # Requires Go 1.26+
 ./terminull-ssh         # Starts on :2222
 ```
 

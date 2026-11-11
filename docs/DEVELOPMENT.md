@@ -51,6 +51,12 @@ Outputs two PDFs to `dist/zine/`: a reader version (5.5"×8.5" portrait) and a
 booklet imposition (11"×8.5" landscape, 2-up saddle-stitch spreads). Requires
 `puppeteer` and `pdf-lib` (dev dependencies, installed via `npm install`).
 
+Puppeteer 25 downloads its own Chrome and needs `unzip` on your PATH to extract
+it (`npx puppeteer browsers install chrome` retries the download). On NixOS the
+downloaded Chrome cannot find system libraries such as `libglib-2.0.so.0`, so
+the export fails unless Chrome is run from an FHS environment or Puppeteer is
+pointed at a system browser with `PUPPETEER_EXECUTABLE_PATH`.
+
 ---
 
 ## Project Structure
