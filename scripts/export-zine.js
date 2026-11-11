@@ -1066,9 +1066,10 @@ async function main() {
   console.log(`[zine] Loading volume ${volumeNum}...`);
   const articles = loadArticles(volumeNum);
 
+  // An all-draft (or empty) volume is not an error: publish exports every volume.
   if (articles.length === 0) {
-    console.error(`Error: No articles found for volume ${volumeNum}`);
-    process.exit(1);
+    console.log(`[zine] volume ${volumeNum} has no published articles; skipping`);
+    return;
   }
 
   console.log(`[zine] Found ${articles.length} articles`);
