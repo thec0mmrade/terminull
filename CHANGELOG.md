@@ -10,6 +10,8 @@ git tag `vX.Y.Z`, and the version in `package.json` is what the site, the
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-11
+
 ### Changed
 
 - "Connecting to …" and "Node: …" now show the site's real hostname (the host
