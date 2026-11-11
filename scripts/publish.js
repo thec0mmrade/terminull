@@ -8,9 +8,9 @@ import { loadDeployConfig } from './publish/config.js';
 import { checkContentRepo, checkConfigUntracked } from './publish/preflight.js';
 import {
   releaseName, releaseText, prepareCommand, finalizeCommand, switchCommand,
-  previousReleaseCommand, pruneCommand,
+  previousReleaseCommand, pruneCommand, sshOpts, rsyncArgs,
 } from './publish/remote.js';
-import { checkHttp, checkSshBanner, withRetries } from './publish/verify.js';
+import { checkHttp, checkHttpBody, checkSshBanner, withRetries } from './publish/verify.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const TOTAL_STEPS = 8;
@@ -72,10 +72,14 @@ export async function buildRelease(cfg, stageDir, meta) {
   const vols = volumeNumbers(cfg.volumesDir);
   if (vols.length === 0) throw new Error(`no vol* directories found in ${cfg.volumesDir}`);
 
+  // Stale PDFs from deleted or renamed volumes must not ship.
+  fs.rmSync(path.join(ROOT, 'public', 'zine'), { recursive: true, force: true });
   for (const n of vols) await runStreaming('npm', ['run', 'zine', '--', '--volume', String(n)], opts);
   await runStreaming('npm', ['run', 'build'], opts);
 
   fs.cpSync(path.join(ROOT, 'dist'), path.join(stageDir, 'site'), { recursive: true });
+  // Verify fetches this to prove the new release (not a stale one) is being served.
+  fs.writeFileSync(path.join(stageDir, 'site', 'release.txt'), `${meta.name}\n`);
   fs.cpSync(path.join(ROOT, 'src/content/pages'), path.join(stageDir, 'content/pages'), { recursive: true });
   const volumesOut = path.join(stageDir, 'content/volumes');
   fs.mkdirSync(volumesOut, { recursive: true });
@@ -102,9 +106,6 @@ export async function buildRelease(cfg, stageDir, meta) {
   fs.writeFileSync(path.join(stageDir, 'bbs.env'), bbsEnv);
   fs.writeFileSync(path.join(stageDir, 'RELEASE.pending'), releaseText(meta));
 }
-
-/** @param {import('./publish/config.js').DeployConfig} cfg */
-const sshOpts = (cfg) => ['-p', String(cfg.sshPort), '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=15'];
 
 /**
  * Run a sh script on the server (`ssh … sh -s`, script on stdin) and return its stdout.
@@ -174,7 +175,7 @@ function remoteSteps(cfg, name, vol) {
   return {
     upload: `Uploading release ${name} to ${cfg.user}@${cfg.host}:${cfg.path}/releases/ (ssh port ${cfg.sshPort})…`,
     switch: `Switching ${cfg.path}/current to ${name} and restarting terminull-bbs…`,
-    verify: `Verifying ${cfg.siteUrl}/, ${cfg.siteUrl}/vol/${vol}/ and the BBS (${bbsCommand(cfg)})…`,
+    verify: `Verifying ${cfg.siteUrl}/, ${cfg.siteUrl}/vol/${vol}/, ${cfg.siteUrl}/release.txt and the BBS (${bbsCommand(cfg)})…`,
     prune: `Pruning old releases, keeping ${cfg.keepReleases}…`,
   };
 }
@@ -186,9 +187,10 @@ function remoteSteps(cfg, name, vol) {
  * @param {import('./publish/config.js').DeployConfig} cfg
  * @param {string} stageDir
  * @param {string} name
- * @param {{attempts?: number, delayMs?: number}} [retry]
+ * @param {{attempts?: number, delayMs?: number, restart?: string}} [opts]
+ *   verify retries, and the BBS restart command (injectable for tests)
  */
-async function deployRelease(cfg, stageDir, name, retry = {}) {
+export async function deployRelease(cfg, stageDir, name, { restart, ...retry } = {}) {
   const vol = newestBuiltVolume(stageDir);
   const steps = remoteSteps(cfg, name, vol);
   const releaseFile = path.join(stageDir, 'RELEASE.pending');
@@ -198,14 +200,7 @@ async function deployRelease(cfg, stageDir, name, retry = {}) {
   await runRemote(cfg, prepareCommand(cfg.path, name));
   const prev = (await runRemote(cfg, previousReleaseCommand(cfg.path))).trim() || null;
   if (prev && !/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(prev)) throw new Error(`unexpected current release name ${JSON.stringify(prev)}`);
-  const rsyncArgs = [
-    '-a', '--delete', '--chmod=Dgo+rx,Fgo+rX', '--exclude=/RELEASE', '--exclude=/RELEASE.*',
-    '-e', sshOpts(cfg).join(' '),
-    ...(prev ? [`--link-dest=../${prev}`] : []),
-    `${stageDir}/`,
-    `${cfg.user}@${cfg.host}:${cfg.path}/releases/${name}/`,
-  ];
-  await runStreaming('rsync', rsyncArgs, { cwd: ROOT, env: process.env });
+  await runStreaming('rsync', rsyncArgs(cfg, stageDir, name, prev), { cwd: ROOT, env: process.env });
   await runRemote(cfg, finalizeCommand(cfg.path, name, text));
   console.log(`      uploaded${prev ? ` (previous: ${prev})` : ' (first release)'}`);
 
@@ -220,7 +215,7 @@ async function deployRelease(cfg, stageDir, name, retry = {}) {
   try {
     try {
       step(6, steps.switch);
-      await runRemote(cfg, switchCommand(cfg.path, name));
+      await runRemote(cfg, switchCommand(cfg.path, name, restart));
       if (ac.signal.aborted) throw new Error('interrupted');
 
       step(7, steps.verify);
@@ -228,6 +223,7 @@ async function deployRelease(cfg, stageDir, name, retry = {}) {
       const host = new URL(cfg.siteUrl).hostname;
       await withRetries(() => checkHttp(`${cfg.siteUrl}/`), opts);
       await withRetries(() => checkHttp(`${cfg.siteUrl}/vol/${vol}/`), opts);
+      await withRetries(() => checkHttpBody(`${cfg.siteUrl}/release.txt`, `${name}\n`), opts);
       await withRetries(() => checkSshBanner(host, cfg.bbsPort), opts);
       console.log('      ok');
     } catch (err) {
@@ -235,9 +231,16 @@ async function deployRelease(cfg, stageDir, name, retry = {}) {
       if (!prev) throw new Error('first release failed verification; left in place');
       console.error(`      rolling back to ${prev}…`);
       try {
-        await runRemote(cfg, switchCommand(cfg.path, prev));
+        await runRemote(cfg, switchCommand(cfg.path, prev, restart));
       } catch (rbErr) {
-        throw new Error(`ROLLBACK FAILED (${/** @type {Error} */ (rbErr).message}); ` +
+        const why = /** @type {Error} */ (rbErr).message;
+        // The switch script swaps the symlink before restarting: tell the two failures apart.
+        const now = await runRemote(cfg, previousReleaseCommand(cfg.path)).then((o) => o.trim(), () => null);
+        if (now === prev) {
+          throw new Error(`rolled back ${cfg.path}/current to ${prev}, but restarting terminull-bbs failed (${why}): ` +
+            'run `sudo systemctl restart terminull-bbs` on the server');
+        }
+        throw new Error(`ROLLBACK FAILED (${why}); ` +
           `${cfg.path}/current may still point at ${name}: switch it back to releases/${prev} by hand`);
       }
       throw new Error(`rolled back to ${prev}`);

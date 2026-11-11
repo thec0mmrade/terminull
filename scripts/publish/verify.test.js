@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
 import net from 'node:net';
-import { checkHttp, checkSshBanner, withRetries } from './verify.js';
+import { checkHttp, checkHttpBody, checkSshBanner, withRetries } from './verify.js';
 
 /** @param {import('node:net').Server} server @returns {Promise<number>} */
 function listen(server) {
@@ -12,9 +12,9 @@ function listen(server) {
 /** @param {import('node:net').Server} server */
 const close = (server) => new Promise((resolve) => server.close(resolve));
 
-/** @param {number} status */
-async function httpServer(status) {
-  const server = http.createServer((req, res) => { res.writeHead(status); res.end('x'); });
+/** @param {number} status @param {string} [body] */
+async function httpServer(status, body = 'x') {
+  const server = http.createServer((req, res) => { res.writeHead(status); res.end(body); });
   return { server, port: await listen(server) };
 }
 
@@ -37,6 +37,33 @@ test('checkHttp rejects on 500', async () => {
   const { server, port } = await httpServer(500);
   try {
     await assert.rejects(checkHttp(`http://127.0.0.1:${port}/`), /500/);
+  } finally {
+    await close(server);
+  }
+});
+
+test('checkHttpBody resolves when the body matches', async () => {
+  const { server, port } = await httpServer(200, 'r2\n');
+  try {
+    await checkHttpBody(`http://127.0.0.1:${port}/release.txt`, 'r2\n');
+  } finally {
+    await close(server);
+  }
+});
+
+test('checkHttpBody rejects a different body', async () => {
+  const { server, port } = await httpServer(200, 'r1\n');
+  try {
+    await assert.rejects(checkHttpBody(`http://127.0.0.1:${port}/release.txt`, 'r2\n'), /serves "r1\\n", expected "r2\\n"/);
+  } finally {
+    await close(server);
+  }
+});
+
+test('checkHttpBody rejects a non-200 status', async () => {
+  const { server, port } = await httpServer(404, 'r2\n');
+  try {
+    await assert.rejects(checkHttpBody(`http://127.0.0.1:${port}/release.txt`, 'r2\n'), /404/);
   } finally {
     await close(server);
   }

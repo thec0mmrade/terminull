@@ -1,22 +1,29 @@
-// Post-switch checks: the site answers 200 and the BBS port speaks SSH.
+// Post-switch checks: the site answers 200 and serves the new release, and the BBS port speaks SSH.
 import http from 'node:http';
 import https from 'node:https';
 import net from 'node:net';
 import { setTimeout as sleep } from 'node:timers/promises';
 
 /**
- * Resolve if a GET of `url` returns 200 (redirects are not followed).
- * @param {string} url @param {number} [timeoutMs]
- * @returns {Promise<void>}
+ * GET `url` (redirects are not followed); resolve with the body (first 64 KiB) if it returns 200.
+ * @param {string} url @param {number} timeoutMs
+ * @returns {Promise<string>}
  */
-export function checkHttp(url, timeoutMs = 10000) {
+function get200(url, timeoutMs) {
   const client = new URL(url).protocol === 'https:' ? https : http;
   return new Promise((resolve, reject) => {
     const req = client.get(url, { agent: false, headers: { connection: 'close' } }, (res) => {
-      res.resume();
-      clearTimeout(timer);
-      if (res.statusCode === 200) resolve();
-      else reject(new Error(`${url} returned ${res.statusCode}`));
+      if (res.statusCode !== 200) {
+        res.resume();
+        clearTimeout(timer);
+        reject(new Error(`${url} returned ${res.statusCode}`));
+        return;
+      }
+      let body = '';
+      res.setEncoding('utf8');
+      res.on('data', (d) => { if (body.length < 65536) body += d; });
+      res.on('end', () => { clearTimeout(timer); resolve(body); });
+      res.on('error', (err) => { clearTimeout(timer); reject(new Error(`${url}: ${err.message}`)); });
     });
     const timer = setTimeout(() => req.destroy(new Error(`${url} timed out after ${timeoutMs} ms`)), timeoutMs);
     req.on('error', (err) => {
@@ -24,6 +31,27 @@ export function checkHttp(url, timeoutMs = 10000) {
       reject(new Error(`${url}: ${err.message}`));
     });
   });
+}
+
+/**
+ * Resolve if a GET of `url` returns 200 (redirects are not followed).
+ * @param {string} url @param {number} [timeoutMs]
+ * @returns {Promise<void>}
+ */
+export async function checkHttp(url, timeoutMs = 10000) {
+  await get200(url, timeoutMs);
+}
+
+/**
+ * Resolve if a GET of `url` returns 200 with exactly `expected` as the body.
+ * @param {string} url @param {string} expected @param {number} [timeoutMs]
+ * @returns {Promise<void>}
+ */
+export async function checkHttpBody(url, expected, timeoutMs = 10000) {
+  const body = await get200(url, timeoutMs);
+  if (body !== expected) {
+    throw new Error(`${url} serves ${JSON.stringify(body.slice(0, 80))}, expected ${JSON.stringify(expected)}`);
+  }
 }
 
 /**

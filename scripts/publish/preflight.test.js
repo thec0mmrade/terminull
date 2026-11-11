@@ -1,4 +1,4 @@
-import { test } from 'node:test';
+import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -8,8 +8,14 @@ import { checkContentRepo, checkConfigUntracked } from './preflight.js';
 
 const git = (cwd, ...args) => execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
 
+/** @type {string[]} */
+const tmpDirs = [];
+after(() => { for (const d of tmpDirs) fs.rmSync(d, { recursive: true, force: true }); });
+
 function tmp() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'terminull-preflight-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'terminull-preflight-'));
+  tmpDirs.push(dir);
+  return dir;
 }
 
 function initRepo(dir) {

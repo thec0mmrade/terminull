@@ -1,4 +1,4 @@
-import { test } from 'node:test';
+import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -6,12 +6,17 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import {
   releaseName, releaseText, prepareCommand, finalizeCommand, switchCommand,
-  previousReleaseCommand, pruneCommand,
+  previousReleaseCommand, pruneCommand, sshOpts, rsyncArgs,
 } from './remote.js';
+
+/** @type {string[]} */
+const tmpDirs = [];
+after(() => { for (const d of tmpDirs) fs.rmSync(d, { recursive: true, force: true }); });
 
 /** Temp deploy root whose name contains a space and a single quote. */
 function tmpRoot() {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), 'terminull-remote-'));
+  tmpDirs.push(base);
   const root = path.join(base, "srv dir'x");
   fs.mkdirSync(path.join(root, 'releases'), { recursive: true });
   return root;
@@ -52,7 +57,7 @@ test('builders single-quote the path, escaping embedded quotes', () => {
   ]) {
     assert.ok(script.includes(`cd '/srv/a b'\\''c'`), script);
   }
-  assert.ok(switchCommand(p, 'n').includes('sudo systemctl restart terminull-bbs'));
+  assert.ok(switchCommand(p, 'n').includes('sudo -n systemctl restart terminull-bbs'));
 });
 
 test('prepareCommand removes unfinished releases and creates the new one', () => {
@@ -128,4 +133,15 @@ test('pruneCommand keeps the newest complete releases and the current target', (
   fs.symlinkSync('releases/20260101-000000-a', path.join(root, 'current'));
   sh(pruneCommand(root, 2));
   assert.deepEqual(releases(root), ['20260101-000000-a', '20260103-000000-c', '20260104-000000-d']);
+});
+
+test('rsyncArgs passes ssh plus its options as -e and links against the previous release', () => {
+  const cfg = { user: 'deploy', host: '203.0.113.10', sshPort: 2200, path: '/srv/terminull' };
+  assert.deepEqual(sshOpts(cfg), ['-p', '2200', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=15']);
+  const args = rsyncArgs(cfg, '/tmp/stage', 'r2', 'r1');
+  assert.equal(args[args.indexOf('-e') + 1], 'ssh -p 2200 -o BatchMode=yes -o ConnectTimeout=15');
+  assert.ok(args.includes('--link-dest=../r1'));
+  assert.ok(args.includes('--exclude=/RELEASE') && args.includes('--exclude=/RELEASE.*'));
+  assert.deepEqual(args.slice(-2), ['/tmp/stage/', 'deploy@203.0.113.10:/srv/terminull/releases/r2/']);
+  assert.ok(!rsyncArgs(cfg, '/tmp/stage', 'r1', null).some((a) => a.startsWith('--link-dest')));
 });

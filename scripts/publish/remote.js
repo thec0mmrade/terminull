@@ -5,7 +5,8 @@
 // script wrapped in { … } so sh parses all of it before running any of it: a
 // connection dropped mid-transfer runs nothing rather than half a script.
 
-const RESTART = 'sudo systemctl restart terminull-bbs';
+// -n: fail instead of prompting when the sudoers rule is missing (stdin is the script).
+const RESTART = 'sudo -n systemctl restart terminull-bbs';
 
 /** Single-quote a value for sh, escaping embedded quotes. @param {string | number} value */
 export const shq = (value) => `'${String(value).replace(/'/g, `'\\''`)}'`;
@@ -42,6 +43,28 @@ export function releaseText(r) {
     `site_url: ${r.siteUrl}`,
     '',
   ].join('\n');
+}
+
+/**
+ * ssh options shared by every remote command and by rsync's `-e`.
+ * @param {{sshPort: number}} cfg
+ */
+export const sshOpts = (cfg) => ['-p', String(cfg.sshPort), '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=15'];
+
+/**
+ * rsync argv uploading the stage to releases/<name>/, hard-linking unchanged files
+ * against the previous release. RELEASE files are never uploaded (finalizeCommand writes it).
+ * @param {{user: string, host: string, sshPort: number, path: string}} cfg
+ * @param {string} stageDir @param {string} name @param {string | null} prev
+ */
+export function rsyncArgs(cfg, stageDir, name, prev) {
+  return [
+    '-a', '--delete', '--chmod=Dgo+rx,Fgo+rX', '--exclude=/RELEASE', '--exclude=/RELEASE.*',
+    '-e', ['ssh', ...sshOpts(cfg)].join(' '),
+    ...(prev ? [`--link-dest=../${checkName(prev)}`] : []),
+    `${stageDir}/`,
+    `${cfg.user}@${cfg.host}:${cfg.path}/releases/${checkName(name)}/`,
+  ];
 }
 
 // Prints the name current points at (empty when there is no current).
