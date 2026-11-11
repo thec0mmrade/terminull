@@ -10,6 +10,13 @@ git tag `vX.Y.Z`, and the version in `package.json` is what the site, the
 
 ## [Unreleased]
 
+### Fixed
+
+- **Website box frames** (the system info box and the help page's boxes): the
+  side lines now meet the corners, and the right-hand corners are no longer
+  cut off. The sides are drawn at the centre of the corner glyphs, in the
+  same colour, and the edges keep their corners at any width.
+
 ## [1.2.1] - 2026-11-11
 
 ### Changed

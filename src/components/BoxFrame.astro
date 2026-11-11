@@ -12,43 +12,51 @@ const plBottom = printLineEnd != null ? `print-line print-line-${printLineEnd}` 
 ---
 
 <div class:list={['box-frame', className]}>
-  {title ? (
-    <div class:list={['box-frame-top', plTop]}>
-      <span class="box-corner">┌─</span>
-      <span class="box-title">[ {title} ]</span>
-      <span class="box-line-fill">─┐</span>
-    </div>
-  ) : (
-    <div class:list={['box-frame-top-plain', plTop]}>┌{'─'.repeat(76)}┐</div>
-  )}
+  {/* Sides are drawn at the centre of the corner glyphs so they meet them;
+      they appear with the top edge in the boot animation. */}
+  <span class:list={['box-side', 'box-side--left', plTop]} aria-hidden="true"></span>
+  <span class:list={['box-side', 'box-side--right', plTop]} aria-hidden="true"></span>
+  <div class:list={['box-row', plTop]} aria-hidden={title ? undefined : 'true'}>
+    <span>{title ? '┌─' : '┌'}</span>
+    {title && <span class="box-title">[ {title} ]</span>}
+    <span class="box-fill"></span>
+    <span>┐</span>
+  </div>
   <div class="box-frame-content">
     <slot />
   </div>
-  <div class:list={['box-frame-bottom', plBottom]}>└{'─'.repeat(76)}┘</div>
+  <div class:list={['box-row', plBottom]} aria-hidden="true">
+    <span>└</span>
+    <span class="box-fill"></span>
+    <span>┘</span>
+  </div>
 </div>
 
 <style>
   .box-frame {
+    position: relative;
     font-family: 'IBM Plex Mono', 'Courier New', monospace;
     margin: 1rem 0;
-    overflow: hidden;
   }
 
-  .box-frame-top, .box-frame-top-plain, .box-frame-bottom {
-    color: var(--border-bright);
+  /* Top and bottom edges: corners fixed at both ends, a ─ fill between, so
+     the corners are never clipped whatever the width. */
+  .box-row {
+    display: flex;
     white-space: nowrap;
-    overflow: hidden;
+    color: var(--border-bright);
     font-size: 1.25rem;
     line-height: 1.2;
   }
 
-  .box-frame-top {
-    display: flex;
+  .box-fill {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
   }
 
-  .box-corner {
-    color: var(--border-bright);
-    flex-shrink: 0;
+  .box-fill::before {
+    content: '────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────';
   }
 
   .box-title {
@@ -57,19 +65,21 @@ const plBottom = printLineEnd != null ? `print-line print-line-${printLineEnd}` 
     padding: 0 0.25rem;
   }
 
-  .box-line-fill {
-    color: var(--border-bright);
-    overflow: hidden;
-    flex: 1;
+  /* Sides: same font size as the rows, so 0.5ch is the centre of a corner
+     glyph and 0.6em the middle of a row (line-height 1.2). */
+  .box-side {
+    position: absolute;
+    top: 0.6em;
+    bottom: 0.6em;
+    width: 0;
+    border-left: 1px solid var(--border-bright);
+    font-size: 1.25rem;
   }
 
-  .box-line-fill::before {
-    content: '────────────────────────────────────────────────────────────────────────────';
-  }
+  .box-side--left { left: calc(0.5ch - 0.5px); }
+  .box-side--right { right: calc(0.5ch - 0.5px); }
 
   .box-frame-content {
-    border-left: 1px solid var(--border);
-    border-right: 1px solid var(--border);
     padding: 0.75rem 1rem;
   }
 
