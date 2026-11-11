@@ -28,3 +28,6 @@ rhysida-iocs.md
 
 # jetbrains setting folder
 .idea/
+
+# zine content (local only; _templates stays tracked)
+src/content/issues/vol*/
