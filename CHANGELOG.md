@@ -10,6 +10,8 @@ git tag `vX.Y.Z`, and the version in `package.json` is what the site, the
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-11
+
 ### Added
 
 - **SSH BBS: volume archive.** `[01] Archive` opens a list of every volume,
