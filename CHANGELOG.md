@@ -10,6 +10,8 @@ git tag `vX.Y.Z`, and the version in `package.json` is what the site, the
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-11-11
+
 ### Fixed
 
 - **Website box frames** (the system info box and the help page's boxes): the
