@@ -10,6 +10,8 @@ git tag `vX.Y.Z`, and the version in `package.json` is what the site, the
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-12
+
 ### Added
 
 - **Favicon.** A pixel-art `T_` in the logo's greens on the site's black, as
