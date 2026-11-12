@@ -10,6 +10,15 @@ git tag `vX.Y.Z`, and the version in `package.json` is what the site, the
 
 ## [Unreleased]
 
+### Fixed
+
+- **Website:** no more stray scrollbars beside the logo, dividers and ASCII or
+  ANSI art. Their sideways scrolling (for phones) also made them vertically
+  scrollable, and box-drawing characters overflow their line height by a few
+  pixels, so an empty vertical scrollbar appeared. They now never scroll
+  vertically and show no scrollbar; on narrow screens you can still swipe
+  them sideways. Code blocks and the help and search overlays keep theirs.
+
 ## [1.2.2] - 2026-11-11
 
 ### Fixed

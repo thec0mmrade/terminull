@@ -37,11 +37,20 @@ const html = ansiToHtml(content);
     font-family: 'IBM Plex Mono', 'Courier New', monospace;
     line-height: 1.1;
     font-size: 1.125rem;
+    /* Swipe sideways on narrow screens, but no scrollbars: overflow-x alone
+       also made the y axis scrollable, and box-drawing glyphs poke out of
+       the 1.1 line height, so a pointless vertical bar appeared. */
     overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
     white-space: pre;
     margin: 0;
     padding: 0;
     background: none;
     border: none;
+  }
+
+  .ansi-art::-webkit-scrollbar {
+    display: none;
   }
 </style>

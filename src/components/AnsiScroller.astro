@@ -124,7 +124,16 @@ const credit = ansiCredit(ansiMeta(file.replace(/.*[\\/]/, ''), bytes));
 
   /* Narrow screens scroll sideways rather than scale: the grid is exact. */
   .ansi-viewport {
+    /* Swipe sideways on narrow screens, but no scrollbars: overflow-x alone
+       also made the y axis scrollable, and box-drawing glyphs poke out of
+       the 1.1 line height, so a pointless vertical bar appeared. */
     overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+
+  .ansi-viewport::-webkit-scrollbar {
+    display: none;
   }
 
   /* 80 columns x 9px cells, 16px rows: VGA text mode, pixel for pixel. */
