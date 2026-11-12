@@ -10,6 +10,13 @@ git tag `vX.Y.Z`, and the version in `package.json` is what the site, the
 
 ## [Unreleased]
 
+### Added
+
+- **Favicon.** A pixel-art `T_` in the logo's greens on the site's black, as
+  an SVG, a real multi-size `favicon.ico` (16, 32, 48 px) and a 180 px Apple
+  touch icon, all linked from every page. It replaces an unlinked placeholder
+  whose `.ico` was really a PNG.
+
 ### Fixed
 
 - **Website:** no more stray scrollbars beside the logo, dividers and ASCII or
