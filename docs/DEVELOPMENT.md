@@ -130,7 +130,7 @@ The name "terminull" appears in these locations. Update all of them:
 | `src/lib/home.js`, `ssh/ui/components/chrome.go` | Menu descriptions and MOTD welcome text (web, `.txt` and BBS) |
 | `src/pages/index.astro:33` | Footer text |
 | `public/favicon.svg`, `favicon.ico`, `apple-touch-icon.png` | Site icon: a pixel-art `T_` (16×16 grid in the SVG; the `.ico` holds 16/32/48 px renders, the touch icon 180 px). Linked in `BaseLayout.astro`. |
-| `src/content/pages/about.md` | Content references to the name |
+| `src/content/pages/about.md` | Content references to the name, and the submissions contact address (terminull's own: replace it) |
 | `src/content/pages/manifesto.md` | Content references to the name |
 
 ### Logo

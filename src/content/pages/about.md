@@ -32,6 +32,8 @@ We welcome submissions in any of our categories:
 * Fiction and creative writing
 * Tool reviews and announcements
 
+To pitch or send an article, email c0mmrade02@proton.me. The contributing guide on GitHub has the format and conventions.
+
 ## Technical Details
 
 This site is built with Astro, renders to static HTML, and requires zero JavaScript for core functionality. Keyboard navigation and the command prompt are progressive enhancements.

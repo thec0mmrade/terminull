@@ -404,39 +404,65 @@ For reusable art, add files to `public/art/` and reference them via the
 
 ## Submission Workflow
 
-1. **Fork** the repository and clone it locally.
+### Submitting to terminull
 
-2. **Create your article** in `src/content/volumes/vol{N}/` (the content repo; copy a template from `src/content/templates/`):
-   ```
-   {order:2d}-{your-slug}.md
-   ```
-   Start with `draft: true` in frontmatter.
+Articles are not taken by pull request: terminull's issues live in a private
+content repo, and the editor adds each accepted article to it.
 
-3. **Write** your content following the conventions above.
+1. **Pitch or send it.** Email **c0mmrade02@proton.me** with either a short pitch (topic,
+   category, rough length) or the finished article. A pitch first saves you
+   work if the topic is already covered.
 
-4. **Verify** the build:
+2. **Write it** as a markdown file named `{order:2d}-{your-slug}.md`, starting
+   from a template in `src/content/templates/`, following the conventions
+   above. Send it with `draft: true` in the frontmatter; the editor flips it
+   when the article is accepted. Attach the file, plus any images or media it
+   uses.
+
+3. **Preview it (optional).** Clone the engine and drop your file into
+   `src/content/volumes/vol1/` (that folder is gitignored, so nothing you put
+   there is ever committed). The site hides drafts, so set `draft: false` in
+   your local copy while you look at it (and back to `true` before you send
+   it). Then:
    ```bash
    npm install
-   npm run build
-   ```
-   The build will catch frontmatter schema errors, broken references, and
-   markdown syntax issues.
-
-5. **Preview** locally:
-   ```bash
    npm run dev
    ```
-   Navigate to your article and check rendering.
+   Check how it renders. `npm run build` also catches frontmatter schema
+   errors, broken references and markdown syntax issues.
 
-6. **Submit a PR** with your article. Keep `draft: true` until review is
-   complete.
+4. **Review.** The editor reads it for correctness, tone and the ethics
+   guidelines, and may ask for changes. `.mdx` files can import modules and
+   run JavaScript at build time, so an `.mdx` submission is reviewed as code,
+   not just as prose. Use `.md` unless you need a video or audio embed.
 
-   `.mdx` files can import modules and run JavaScript at build time, so an
-   `.mdx` submission is reviewed as code, not just as prose. Use `.md` unless
-   you need a video or audio embed.
+5. **Publication.** The editor sets the article's order, flips `draft` to
+   `false`, commits it to the content repo and publishes. It appears on the
+   website, the SSH BBS, the `.txt` endpoints and in the next print zine.
 
-7. **Publication** -- once approved, `draft` is set to `false` and the article
-   goes live on the next `npm run publish`.
+### Improving the engine
+
+Code, theme, documentation and bug-fix contributions are welcome as pull
+requests to the public `terminull` repository (see
+[DEVELOPMENT.md](./DEVELOPMENT.md)). Keep them free of article content.
+
+### Running your own zine
+
+terminull is a template as much as a publication. To run your own:
+
+1. Fork or clone the engine.
+2. Keep your issues in your own content repo, checked out at
+   `src/content/volumes/` (see [DEVELOPMENT.md](./DEVELOPMENT.md) and
+   [DEPLOY.md](./DEPLOY.md)). Nothing of terminull's content comes with the
+   engine.
+3. Rewrite the starter text: the About page, the manifesto and the homepage
+   message are examples, and **this section's contact address and the About
+   page's are terminull's, not yours**. Replace them with where your writers
+   should send submissions.
+
+This guide then works unchanged for your own authors: article format,
+markdown features, ethics and sign-off conventions. Only the place they send
+articles differs.
 
 ---
 

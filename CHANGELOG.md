@@ -12,6 +12,13 @@ git tag `vX.Y.Z`, and the version in `package.json` is what the site, the
 
 ### Changed
 
+- **Submissions go by email, not pull request.** `docs/CONTRIBUTING.md` and
+  the About page now say to email articles to the editor, who adds accepted
+  ones to the private content repo: pull requests can't carry articles now
+  that issues live outside this repo. New sections say that code, theme and
+  docs fixes are welcome as pull requests, and how to run your own zine
+  (forkers must replace the contact address). `docs/EDITING.md`'s review
+  steps match.
 - Docs brought up to date: build size (18 pages), the BoxFrame and BBS
   key-binding descriptions, project trees (new `src/lib` modules, the BBS
   `menu.go`, icon files, font list), the line numbers they point to, and the

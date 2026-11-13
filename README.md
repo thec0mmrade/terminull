@@ -161,7 +161,7 @@ See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for the full writing guide.
 | Document | Audience |
 |----------|----------|
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Developers -- technical internals, rendering pipeline, component system |
-| [CONTRIBUTING.md](docs/CONTRIBUTING.md) | Authors -- article format, markdown features, submission workflow |
+| [CONTRIBUTING.md](docs/CONTRIBUTING.md) | Authors -- article format, markdown features, how to submit, running your own zine |
 | [DEVELOPMENT.md](docs/DEVELOPMENT.md) | Forkers -- customization, theming, extending the platform |
 | [EDITING.md](docs/EDITING.md) | Editors -- reviewing, publishing, volume management |
 | [ADMIN.md](docs/ADMIN.md) | Admins -- deployment, DNS, dependencies, security |

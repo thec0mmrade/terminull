@@ -8,8 +8,9 @@ See also: [CONTRIBUTING.md](./CONTRIBUTING.md) | [DEVELOPMENT.md](./DEVELOPMENT.
 
 ## Role of the Editor
 
-The editor manages the publication pipeline. Authors write articles and submit
-PRs (see [CONTRIBUTING.md](./CONTRIBUTING.md)). The editor:
+The editor manages the publication pipeline. Authors email their articles
+(see [CONTRIBUTING.md](./CONTRIBUTING.md)); the editor reviews them and adds
+the accepted ones to the content repo. The editor:
 
 - Reviews submissions for correctness, tone, and editorial standards
 - Manages `draft` status and publication timing
@@ -25,7 +26,7 @@ files.
 
 ## Reviewing Submissions
 
-Authors submit PRs with `draft: true` articles. Here is what to check.
+Authors send articles with `draft: true`. Drop each into the content repo's volume folder (`src/content/volumes/vol{N}/`) before reviewing. Here is what to check.
 
 ### Frontmatter Validation
 
@@ -54,7 +55,7 @@ npm run build
 ```
 
 This catches schema violations, broken references, and markdown syntax issues.
-A clean build is the minimum bar for any PR.
+A clean build is the minimum bar for any submission.
 
 ### Preview Rendering
 
@@ -62,7 +63,8 @@ A clean build is the minimum bar for any PR.
 npm run dev
 ```
 
-Navigate to the article at `/vol/{N}/{slug}` and check:
+The site hides drafts, so set `draft: false` on the article first (you will
+do that on acceptance anyway). Then navigate to `/vol/{N}/{slug}` and check:
 
 - Headings render correctly (h1 gold block, h2 cyan, h3 green)
 - Code blocks have language labels and syntax highlighting
