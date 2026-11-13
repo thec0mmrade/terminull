@@ -118,7 +118,7 @@ build behavior. Before upgrading:
 
 ### Build Characteristics
 
-- **Build time:** ~800ms for 11 pages (scales linearly with article count)
+- **Build time:** ~1s for 18 pages (Volume 1 with its articles) (scales linearly with article count)
 - **Output:** pure static HTML/CSS/JS in `dist/`
 - **No SSR, no edge functions, no database**
 
@@ -192,7 +192,7 @@ database, no authentication.
 | Search           | Client-side JS fetches `/search-index.json` (same-origin, no auth). User input is used for substring matching only, not rendered as HTML. |
 | Storage          | `localStorage` stores CRT toggle preference (`terminull-crt`). No sensitive data. |
 | Cookies          | None.                                                       |
-| Analytics        | None. No tracking by design.                                |
+| Analytics        | None, by design (the BBS logs connections; see below).      |
 | Third-party JS   | None.                                                       |
 
 ### SSH BBS Attack Surface

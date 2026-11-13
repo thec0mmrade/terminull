@@ -36,7 +36,7 @@ npm run preview
 
 The dev server runs at `http://localhost:4321` with hot reload.
 
-`npm run build` produces static files in `dist/` (~800ms, ~11 pages).
+`npm run build` produces static files in `dist/` (about a second; 18 pages for Volume 1).
 
 No linter or test runner is configured. Verify changes with `npm run build`.
 
@@ -80,13 +80,14 @@ terminull/
 │   │   ├── logo.txt            # Site logo
 │   │   ├── headers/            # Article header art
 │   │   └── dividers/           # Decorative dividers
-│   ├── fonts/                  # IBM Plex Mono woff2 files
+│   ├── fonts/                  # VT323, IBM Plex Mono, IBM VGA (woff2) and their licenses
+│   ├── apple-touch-icon.png
 │   ├── favicon.ico
 │   ├── favicon.svg
 │   └── robots.txt
 ├── src/
 │   ├── assets/styles/          # CSS files (5 files)
-│   ├── components/             # Astro components (15 files)
+│   ├── components/             # Astro components (16 files)
 │   ├── content.config.ts       # Collection schemas and loaders
 │   ├── content/
 │   │   ├── templates/           # Template articles (drafts)
@@ -119,7 +120,7 @@ The name "terminull" appears in these locations. Update all of them:
 |------|----------------|
 | `TERMINULL_SITE_URL` | Public site URL (environment or `deploy.env`; feeds Astro `site`, `.txt` footers, the zine back cover and the BBS). Its host is also the "node" name in every "Connecting to …" line and `Node:` field, on the web, in `.txt` and in the BBS (`siteHost()` in `src/lib/site-url.js`, `SiteHost()` in `ssh/ui/components/header.go`); unset, it is `terminull.local`. |
 | `src/components/BbsPrompt.astro:11` | Prompt prefix (`guest@terminull`) |
-| `src/components/BbsPrompt.astro:95,151` | Error messages (`terminull: cd:`, `terminull: command not found:`) |
+| `src/components/BbsPrompt.astro:99,155` | Error messages (`terminull: cd:`, `terminull: command not found:`) |
 | `src/components/StatusBar.astro:13` | Status bar label (`terminull`) |
 | `src/components/Seo.astro:9` | Default description (`terminull - hacker e-zine`) |
 | `src/components/Seo.astro:11` | Title suffix (`// terminull`) |
@@ -127,7 +128,7 @@ The name "terminull" appears in these locations. Update all of them:
 | `src/components/CrtEffect.astro:10` | localStorage key (`terminull-crt`) |
 | `src/pages/index.astro:15` | Page title and description |
 | `src/lib/home.js`, `ssh/ui/components/chrome.go` | Menu descriptions and MOTD welcome text (web, `.txt` and BBS) |
-| `src/pages/index.astro:34` | Footer text |
+| `src/pages/index.astro:33` | Footer text |
 | `public/favicon.svg`, `favicon.ico`, `apple-touch-icon.png` | Site icon: a pixel-art `T_` (16×16 grid in the SVG; the `.ico` holds 16/32/48 px renders, the touch icon 180 px). Linked in `BaseLayout.astro`. |
 | `src/content/pages/about.md` | Content references to the name |
 | `src/content/pages/manifesto.md` | Content references to the name |
@@ -185,7 +186,7 @@ itself.
 
 The fallback font is **IBM Plex Mono** (self-hosted in `public/fonts/`), used
 for code blocks, ASCII art, and box-drawing characters. Replace the woff2 files
-and update the `@font-face` declarations in `global.css:13-27` if changing it.
+and update the `@font-face` declarations in `global.css:36-50` if changing it.
 
 ### Categories
 
@@ -211,7 +212,7 @@ To add a new category:
 ### Connection Sequence
 
 The boot-up text at the top of every page. Edit
-`src/layouts/BaseLayout.astro:40-44`:
+`src/layouts/BaseLayout.astro:42-46`:
 
 ```html
 <div class="connection-sequence" aria-hidden="true">

@@ -10,6 +10,14 @@ git tag `vX.Y.Z`, and the version in `package.json` is what the site, the
 
 ## [Unreleased]
 
+### Changed
+
+- Docs brought up to date: build size (18 pages), the BoxFrame and BBS
+  key-binding descriptions, project trees (new `src/lib` modules, the BBS
+  `menu.go`, icon files, font list), the line numbers they point to, and the
+  README and ADMIN "no tracking" wording (now "no analytics", like the
+  footers).
+
 ## [1.3.0] - 2026-11-12
 
 ### Added

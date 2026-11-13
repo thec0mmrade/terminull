@@ -57,7 +57,7 @@ Astro CLI
   └── Writes static HTML to dist/
 ```
 
-Build command: `astro build` (runs in ~800ms, produces 11 pages).
+Build command: `astro build` (runs in about a second; 18 pages for Volume 1).
 
 ### Content Collections
 
@@ -308,7 +308,7 @@ Single breakpoint at **640px**:
 |----------------------|------------------------------------------------------|
 | `AsciiArt.astro`     | Renders ASCII art from `public/art/` files or inline text. Color variants: green, gold, cyan, pink, red, muted. Uses IBM Plex Mono. |
 | `AnsiArt.astro`      | Renders ANSI escape-coded art via `ansi_up` library. Reads from `public/art/` or inline text. |
-| `BoxFrame.astro`     | Box-drawing character frame with optional title. 76-char wide borders. Optional `printLineStart`/`printLineEnd` props enable staggered print-line animation on the frame borders. |
+| `BoxFrame.astro`     | Box-drawing character frame with optional title. The top and bottom edges are flex rows with the corners pinned at both ends and a `─` fill between, so all four corners show at any width; the sides are drawn at the centre of the corner glyphs so they meet them. Optional `printLineStart`/`printLineEnd` props enable staggered print-line animation on the frame borders. |
 | `BbsMenu.astro`      | Numbered menu list with `[00]` prefixed items. Assigns `data-nav-item` and `data-nav-index` attributes. |
 | `ArticleList.astro`  | Tabular article listing with columns: #, title, author, category. Sorted by `order`. Assigns nav attributes. |
 | `ArticleNav.astro`   | Prev/Next/Index navigation bar for articles.         |
@@ -693,14 +693,14 @@ and defines a custom Glamour `StyleConfig` matching `glow-markdown.css`:
 
 ### Key Bindings
 
-**List screens** (home, volume TOC):
+**List screens** (home, archive, volume TOC):
 
 | Key | Action |
 |-----|--------|
 | `j` / `↓` | Move cursor down |
 | `k` / `↑` | Move cursor up |
 | `Enter` | Select item |
-| `1-9` | Quick jump to item |
+| `0-9` | Quick jump, numbered as on the website: `0` is `[00]`. In a volume, a digit opens the article with that number |
 
 **Viewport screens** (article, page, help):
 
@@ -754,6 +754,7 @@ ssh/
     │   ├── header.go          # Logo + tagline + system info box
     │   ├── statusbar.go       # Bottom status line
     │   ├── boxframe.go        # Box-drawing character frame
+    │   ├── menu.go            # Numbered [00] menu, digit-key mapping, word wrap
     │   └── chrome.go          # Dividers, footer, MOTD, connection lines
     └── theme/
         ├── colors.go          # xterm-256 Lip Gloss color constants
@@ -889,7 +890,11 @@ src/
 │   ├── ansi-art.js             # .ANS parser, SAUCE, cursor replay (shared with zine script)
 │   ├── ansi-render.ts          # ANSI-to-HTML conversion wrapper
 │   ├── ansi-text.ts            # ANSI text rendering (marked-terminal) + BBS chrome builders
-│   └── search-index.ts         # Search index builder
+│   ├── home.js                 # Homepage menu and MOTD, shared by the web and .txt homepages (mirrored by the BBS)
+│   ├── paths.js                # Where the volumes live (TERMINULL_VOLUMES_DIR)
+│   ├── search-index.ts         # Search index builder
+│   ├── site-url.js             # Public site URL and its host (TERMINULL_SITE_URL)
+│   └── version.js              # Engine version, read from package.json
 ├── pages/
 │   ├── index.astro             # Homepage
 │   ├── help.astro              # Command reference page

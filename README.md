@@ -11,7 +11,7 @@
 
 terminull is a static website that simulates a 1990s BBS terminal. It publishes
 technical deep-dives, security research, tool breakdowns, ASCII art, and
-creative writing for the hacker community. No tracking, no ads, no paywalls.
+creative writing for the hacker community. No analytics, no ads, no paywalls.
 
 ---
 
@@ -59,11 +59,11 @@ terminull/
 │   │   ├── templates/         # Template articles (drafts)
 │   │   ├── volumes/           # Your issues: a separate private repo (gitignored here)
 │   │   └── pages/             # Static pages (about, manifesto)
-│   ├── components/            # Astro components (15 files)
+│   ├── components/            # Astro components (16 files)
 │   ├── layouts/               # BaseLayout, ArticleLayout, IssueLayout
 │   ├── pages/                 # Route files
 │   ├── assets/styles/         # CSS (colors, terminal, glow-markdown, etc.)
-│   ├── lib/                   # Search index, ANSI text rendering
+│   ├── lib/                   # Search index, ANSI text, homepage menu, site URL, version
 │   └── plugins/               # Remark/rehype plugins
 ├── ssh/                       # Go SSH BBS server
 │   ├── content/               # Content loader, frontmatter parser, search

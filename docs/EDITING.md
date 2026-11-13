@@ -151,7 +151,7 @@ They land in `public/zine/`.
 The `order` field in frontmatter controls:
 
 - Position in the volume table of contents (`src/pages/vol/[volume]/index.astro`)
-- Prev/next navigation links (`src/pages/vol/[volume]/[slug].astro:14-20`)
+- Prev/next navigation links (`src/pages/vol/[volume]/[slug].astro:15-22`)
 
 Articles in each volume are sorted by `order` ascending. The filename prefix
 (`{order:2d}-`) is a convention for filesystem readability -- only the
