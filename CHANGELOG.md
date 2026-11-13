@@ -10,6 +10,8 @@ git tag `vX.Y.Z`, and the version in `package.json` is what the site, the
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-11-12
+
 ### Changed
 
 - **Submissions go by email, not pull request.** `docs/CONTRIBUTING.md` and
